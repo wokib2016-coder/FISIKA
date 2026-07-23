@@ -59,7 +59,7 @@
         }
 
         .card {
-            max-width: 820px;
+            max-width: 860px;
             width: 100%;
             background: rgba(12, 22, 40, 0.55);
             backdrop-filter: blur(16px) saturate(1.2);
@@ -78,7 +78,7 @@
             box-shadow: 0 50px 80px -18px rgba(0, 0, 0, 0.9);
         }
 
-        /* VIDEO STREAM - Menggunakan iframe dengan pendekatan berbeda */
+        /* VIDEO STREAM - Dual mode: WebRTC + IP Camera */
         .video-wrapper {
             position: relative;
             width: 100%;
@@ -88,7 +88,7 @@
             background: rgba(0, 0, 0, 0.8);
             box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
             transition: all 0.3s ease;
-            min-height: 320px;
+            min-height: 350px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -98,12 +98,26 @@
             box-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
         }
 
-        /* Iframe untuk stream */
-        .video-wrapper iframe {
-            display: block;
+        /* Video element untuk WebRTC / kamera lokal */
+        .video-wrapper #localVideo {
+            display: none;
+            width: 100%;
+            height: auto;
+            max-height: 70vh;
+            aspect-ratio: 16 / 9;
+            background: #0a0f1a;
+            border: none;
+            outline: none;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        /* Iframe untuk IP Camera */
+        .video-wrapper #ipCameraIframe {
+            display: none;
             width: 100%;
             height: 100%;
-            min-height: 320px;
+            min-height: 350px;
             aspect-ratio: 16 / 9;
             background: #0a0f1a;
             border: none;
@@ -152,100 +166,82 @@
             letter-spacing: 0.05em;
         }
 
-        .video-wrapper .loading-overlay .loading-url {
+        .video-wrapper .loading-overlay .loading-sub {
             color: rgba(255, 255, 255, 0.2);
             font-size: 0.65rem;
-            font-family: 'Courier New', monospace;
         }
 
-        /* Pesan error/fallback */
-        .video-wrapper .stream-fallback {
-            display: none;
-            position: absolute;
-            inset: 0;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.8rem;
-            background: rgba(10, 15, 30, 0.95);
-            backdrop-filter: blur(8px);
-            border-radius: 2rem;
-            color: #9bb8e8;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .video-wrapper .stream-fallback i {
-            font-size: 3.5rem;
-            opacity: 0.25;
-            color: #7fb0ff;
-        }
-
-        .video-wrapper .stream-fallback .fallback-title {
-            font-size: 1.1rem;
-            opacity: 0.8;
-        }
-
-        .video-wrapper .stream-fallback .fallback-sub {
-            font-size: 0.85rem;
-            opacity: 0.5;
-            max-width: 400px;
-        }
-
-        .video-wrapper .stream-fallback .fallback-url {
-            font-size: 0.7rem;
-            opacity: 0.35;
-            font-family: 'Courier New', monospace;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 0.3rem 1rem;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .video-wrapper .stream-fallback .btn-group-fallback {
+        /* Kontrol kamera */
+        .camera-controls {
             display: flex;
-            gap: 0.8rem;
-            margin-top: 0.5rem;
             flex-wrap: wrap;
+            gap: 0.8rem;
             justify-content: center;
+            padding: 0.8rem 0 0.5rem 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
         }
 
-        .video-wrapper .stream-fallback .btn-fallback {
-            padding: 0.5rem 1.8rem;
-            background: rgba(70, 150, 255, 0.1);
-            border: 1px solid rgba(70, 150, 255, 0.15);
+        .camera-controls .btn-cam {
+            padding: 0.5rem 1.5rem;
+            background: rgba(70, 150, 255, 0.08);
+            border: 1px solid rgba(70, 150, 255, 0.12);
             border-radius: 30px;
             color: #8bb4f0;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-family: 'Inter', sans-serif;
-            text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
         }
 
-        .video-wrapper .stream-fallback .btn-fallback:hover {
-            background: rgba(70, 150, 255, 0.2);
+        .camera-controls .btn-cam:hover {
+            background: rgba(70, 150, 255, 0.15);
             transform: scale(1.02);
         }
 
-        /* Info tambahan tentang CORS */
-        .cors-info {
-            display: none;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 107, 107, 0.08);
-            border-top: 1px solid rgba(255, 107, 107, 0.1);
-            padding: 0.5rem 1rem;
-            color: rgba(255, 107, 107, 0.4);
+        .camera-controls .btn-cam.active {
+            background: rgba(76, 175, 80, 0.15);
+            border-color: rgba(76, 175, 80, 0.2);
+            color: #81c784;
+        }
+
+        .camera-controls .btn-cam i {
+            font-size: 0.8rem;
+        }
+
+        .camera-controls .btn-cam .badge-cam {
             font-size: 0.55rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.1rem 0.5rem;
+            border-radius: 20px;
+            opacity: 0.5;
+        }
+
+        /* Status indikator */
+        .cam-status {
             text-align: center;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.25);
+            padding: 0.3rem 0;
             letter-spacing: 0.03em;
-            border-radius: 0 0 2rem 2rem;
+        }
+
+        .cam-status .dot-status {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 0.4rem;
+        }
+
+        .cam-status .dot-status.off {
+            background: #ff6b6b;
+        }
+        .cam-status .dot-status.on {
+            background: #4caf50;
+            animation: blink 1.4s infinite;
         }
 
         .stream-label {
@@ -266,8 +262,14 @@
 
         .stream-label i {
             font-size: 0.6rem;
-            color: #ff6b6b;
+            color: #4caf50;
             animation: blink 1.4s infinite;
+        }
+
+        .stream-label .status-text {
+            font-size: 0.6rem;
+            opacity: 0.6;
+            font-weight: 300;
         }
 
         @keyframes blink {
@@ -278,12 +280,6 @@
             50% {
                 opacity: 0.15;
             }
-        }
-
-        .stream-label .status-text {
-            font-size: 0.6rem;
-            opacity: 0.6;
-            font-weight: 300;
         }
 
         .icon-row {
@@ -533,7 +529,8 @@
         .quote-block,
         .sosial,
         .video-wrapper,
-        .stream-label {
+        .stream-label,
+        .camera-controls {
             animation: fadeNaik 0.8s ease forwards;
         }
 
@@ -542,6 +539,9 @@
         }
         .stream-label {
             animation-delay: 0.08s;
+        }
+        .camera-controls {
+            animation-delay: 0.1s;
         }
         .deskripsi {
             animation-delay: 0.12s;
@@ -593,12 +593,12 @@
                 border-radius: 1.2rem;
                 min-height: 220px;
             }
-            .video-wrapper iframe {
+            .video-wrapper #ipCameraIframe {
                 min-height: 220px;
             }
-            .video-wrapper .stream-fallback .btn-group-fallback {
-                flex-direction: column;
-                align-items: center;
+            .camera-controls .btn-cam {
+                font-size: 0.65rem;
+                padding: 0.4rem 1rem;
             }
         }
 
@@ -624,48 +624,48 @@
             <!-- Loading overlay -->
             <div class="loading-overlay" id="loadingOverlay">
                 <div class="spinner"></div>
-                <span class="loading-text">Menghubungkan ke stream...</span>
-                <span class="loading-url">http://10.101.209.113/</span>
+                <span class="loading-text" id="loadingText">Menghubungkan ke kamera...</span>
+                <span class="loading-sub" id="loadingSub">Pastikan kamera terhubung</span>
             </div>
 
-            <!-- Iframe untuk stream -->
-            <iframe id="streamIframe" 
+            <!-- Video untuk WebRTC (kamera lokal) -->
+            <video id="localVideo" autoplay muted playsinline></video>
+
+            <!-- Iframe untuk IP Camera -->
+            <iframe id="ipCameraIframe" 
                     src="" 
                     frameborder="0" 
                     allowfullscreen
-                    allow="autoplay; encrypted-media"
-                    sandbox="allow-same-origin allow-scripts allow-forms allow-modals">
+                    allow="autoplay; encrypted-media">
             </iframe>
+        </div>
 
-            <!-- Fallback jika stream gagal -->
-            <div class="stream-fallback" id="streamFallback">
-                <i class="fas fa-video-slash"></i>
-                <span class="fallback-title">Stream tidak dapat ditampilkan</span>
-                <span class="fallback-sub">
-                    Browser memblokir akses ke stream HTTP dari halaman HTTPS karena kebijakan keamanan (CORS & Mixed Content).
-                </span>
-                <span class="fallback-url">http://10.101.209.113/</span>
-                <div class="btn-group-fallback">
-                    <a href="http://10.101.209.113/" target="_blank" class="btn-fallback">
-                        <i class="fas fa-external-link-alt"></i> Buka di Tab Baru
-                    </a>
-                    <button class="btn-fallback" onclick="location.reload()">
-                        <i class="fas fa-sync-alt"></i> Refresh Halaman
-                    </button>
-                </div>
-            </div>
+        <!-- Status kamera -->
+        <div class="cam-status" id="camStatus">
+            <span class="dot-status off" id="statusDot"></span>
+            <span id="statusText">Kamera belum aktif</span>
+        </div>
 
-            <!-- Info CORS -->
-            <div class="cors-info" id="corsInfo">
-                <i class="fas fa-shield-alt"></i> CORS & Mixed Content — buka di tab baru untuk mengakses stream
-            </div>
+        <!-- Kontrol kamera -->
+        <div class="camera-controls">
+            <button class="btn-cam active" id="btnLocalCam">
+                <i class="fas fa-camera"></i> Kamera Lokal
+                <span class="badge-cam">WebRTC</span>
+            </button>
+            <button class="btn-cam" id="btnIPCam">
+                <i class="fas fa-network-wired"></i> IP Camera
+                <span class="badge-cam">10.101.209.113</span>
+            </button>
+            <button class="btn-cam" id="btnStopCam">
+                <i class="fas fa-stop-circle"></i> Matikan
+            </button>
         </div>
 
         <!-- Label stream -->
         <div class="stream-label">
             <i class="fas fa-circle"></i> 
             LIVE STREAM · Fisika Lab
-            <span class="status-text">(akses via tab baru)</span>
+            <span class="status-text" id="streamModeText">(kamera lokal)</span>
         </div>
 
         <!-- Ikon fisika -->
@@ -760,104 +760,190 @@
             'use strict';
 
             const STREAM_URL = 'http://10.101.209.113/';
-            const iframe = document.getElementById('streamIframe');
-            const fallback = document.getElementById('streamFallback');
-            const loading = document.getElementById('loadingOverlay');
-            const corsInfo = document.getElementById('corsInfo');
-            const wrapper = document.getElementById('videoWrapper');
+            
+            // Elements
+            const localVideo = document.getElementById('localVideo');
+            const ipIframe = document.getElementById('ipCameraIframe');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            const loadingSub = document.getElementById('loadingSub');
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const streamModeText = document.getElementById('streamModeText');
+            
+            const btnLocal = document.getElementById('btnLocalCam');
+            const btnIP = document.getElementById('btnIPCam');
+            const btnStop = document.getElementById('btnStopCam');
 
-            let loaded = false;
-            let attempts = 0;
-            const maxAttempts = 2;
+            let localStream = null;
+            let currentMode = 'local'; // 'local' or 'ip'
+            let isCameraOn = false;
 
-            function showFallback() {
-                if (loading) loading.classList.add('hidden');
-                if (iframe) iframe.style.display = 'none';
-                if (fallback) fallback.style.display = 'flex';
-                if (corsInfo) corsInfo.style.display = 'block';
+            // Fungsi update status
+            function updateStatus(on, mode, text) {
+                if (on) {
+                    statusDot.className = 'dot-status on';
+                    statusText.textContent = text || 'Kamera aktif';
+                } else {
+                    statusDot.className = 'dot-status off';
+                    statusText.textContent = text || 'Kamera tidak aktif';
+                }
+                isCameraOn = on;
+                
+                if (mode === 'local') {
+                    streamModeText.textContent = '(kamera lokal)';
+                } else if (mode === 'ip') {
+                    streamModeText.textContent = '(IP camera)';
+                } else {
+                    streamModeText.textContent = '(off)';
+                }
             }
 
-            function hideFallback() {
-                if (fallback) fallback.style.display = 'none';
-                if (corsInfo) corsInfo.style.display = 'none';
-                if (iframe) iframe.style.display = 'block';
-            }
-
+            // Fungsi hide loading
             function hideLoading() {
-                if (loading) loading.classList.add('hidden');
+                loadingOverlay.classList.add('hidden');
             }
 
-            function loadStream() {
-                attempts++;
-                console.log(`🔄 Mencoba memuat stream (percobaan ${attempts})...`);
-
-                if (loading) loading.classList.remove('hidden');
-                hideFallback();
-                if (iframe) iframe.style.display = 'block';
-
-                // Muat iframe dengan cache busting
-                if (iframe) {
-                    const url = STREAM_URL + (STREAM_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
-                    iframe.src = url;
-                }
-
-                // Timeout untuk deteksi kegagalan
-                setTimeout(() => {
-                    if (!loaded && attempts < maxAttempts) {
-                        console.log(`⏳ Percobaan ${attempts} gagal, mencoba lagi...`);
-                        loadStream();
-                    } else if (!loaded) {
-                        console.log('❌ Semua percobaan gagal');
-                        showFallback();
-                    }
-                }, 7000);
+            // Fungsi show loading
+            function showLoading(text, sub) {
+                loadingOverlay.classList.remove('hidden');
+                if (text) loadingText.textContent = text;
+                if (sub) loadingSub.textContent = sub;
             }
 
-            // Event listener untuk iframe
-            if (iframe) {
-                iframe.addEventListener('load', function() {
-                    console.log('✅ Iframe loaded');
-                    loaded = true;
+            // ==================== KAMERA LOKAL (WebRTC) ====================
+            async function startLocalCamera() {
+                showLoading('Mengaktifkan kamera lokal...', 'Mohon izinkan akses kamera');
+                
+                try {
+                    // Matikan IP camera dulu
+                    stopIPCamera();
+                    
+                    localStream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 },
+                            facingMode: 'user'
+                        },
+                        audio: false
+                    });
+                    
+                    localVideo.srcObject = localStream;
+                    localVideo.style.display = 'block';
+                    ipIframe.style.display = 'none';
+                    
                     hideLoading();
-                    hideFallback();
-                    attempts = 0;
-                });
-
-                iframe.addEventListener('error', function(e) {
-                    console.warn('⚠️ Iframe error:', e);
-                    if (!loaded) {
-                        if (attempts < maxAttempts) {
-                            loadStream();
-                        } else {
-                            showFallback();
-                        }
-                    }
-                });
+                    updateStatus(true, 'local', 'Kamera lokal aktif');
+                    currentMode = 'local';
+                    
+                    btnLocal.classList.add('active');
+                    btnIP.classList.remove('active');
+                    
+                    console.log('✅ Kamera lokal berhasil diaktifkan');
+                    
+                } catch (err) {
+                    console.error('❌ Gagal mengakses kamera:', err);
+                    hideLoading();
+                    updateStatus(false, 'local', 'Gagal akses kamera: ' + err.message);
+                    alert('Tidak dapat mengakses kamera.\n\nPastikan:\n1. Anda mengizinkan akses kamera\n2. Kamera terhubung dengan benar\n\nError: ' + err.message);
+                }
             }
 
-            // Mulai load
-            loadStream();
+            // ==================== IP CAMERA ====================
+            function startIPCamera() {
+                showLoading('Menghubungkan ke IP Camera...', 'http://10.101.209.113/');
+                
+                // Matikan kamera lokal dulu
+                stopLocalCamera();
+                
+                // Sembunyikan video lokal
+                localVideo.style.display = 'none';
+                localVideo.srcObject = null;
+                
+                // Tampilkan iframe
+                ipIframe.style.display = 'block';
+                ipIframe.src = STREAM_URL + '?_t=' + Date.now();
+                
+                // Set timeout untuk iframe
+                setTimeout(() => {
+                    hideLoading();
+                    updateStatus(true, 'ip', 'IP Camera terhubung');
+                    currentMode = 'ip';
+                    
+                    btnIP.classList.add('active');
+                    btnLocal.classList.remove('active');
+                    
+                    console.log('✅ IP Camera diaktifkan:', STREAM_URL);
+                }, 3000);
+            }
 
-            // Fallback jika semua gagal dalam 15 detik
-            setTimeout(() => {
-                if (!loaded) {
-                    showFallback();
+            // ==================== STOP CAMERA ====================
+            function stopLocalCamera() {
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                    localStream = null;
                 }
-            }, 15000);
+                localVideo.srcObject = null;
+                localVideo.style.display = 'none';
+            }
 
-            // Log info
-            console.log('📹 Stream URL:', STREAM_URL);
-            console.log('💡 Karena CORS & Mixed Content, stream mungkin perlu dibuka di tab baru');
-            console.log('🔒 Browser memblokir HTTP dari HTTPS untuk alamat IP lokal');
+            function stopIPCamera() {
+                ipIframe.src = 'about:blank';
+                ipIframe.style.display = 'none';
+            }
 
-            // Tampilkan info CORS setelah beberapa detik jika masih loading
-            setTimeout(() => {
-                if (!loaded && corsInfo) {
-                    corsInfo.style.display = 'block';
+            function stopAllCameras() {
+                stopLocalCamera();
+                stopIPCamera();
+                hideLoading();
+                updateStatus(false, 'off', 'Kamera dimatikan');
+                currentMode = 'off';
+                btnLocal.classList.remove('active');
+                btnIP.classList.remove('active');
+                console.log('⏹️ Semua kamera dimatikan');
+            }
+
+            // ==================== EVENT LISTENERS ====================
+            btnLocal.addEventListener('click', function() {
+                if (currentMode === 'local' && isCameraOn) {
+                    // Sudah aktif, tidak melakukan apa-apa
+                    return;
                 }
-            }, 3000);
+                startLocalCamera();
+            });
 
-        })();
-    </script>
-</body>
-</html>
+            btnIP.addEventListener('click', function() {
+                if (currentMode === 'ip' && isCameraOn) {
+                    return;
+                }
+                startIPCamera();
+            });
+
+            btnStop.addEventListener('click', function() {
+                stopAllCameras();
+            });
+
+            // ==================== AUTO START ====================
+            // Coba mulai dengan kamera lokal secara otomatis
+            setTimeout(() => {
+                startLocalCamera();
+            }, 500);
+
+            // ==================== FALLBACK ====================
+            // Jika iframe IP camera error, tampilkan pesan
+            ipIframe.addEventListener('error', function() {
+                console.warn('⚠️ IP Camera error');
+                if (currentMode === 'ip') {
+                    hideLoading();
+                    updateStatus(false, 'ip', 'IP Camera tidak merespon');
+                }
+            });
+
+            // ==================== LOG ====================
+            console.log('📹 Fisica - Guru Fisika');
+            console.log('📷 Mode: Kamera Lokal (WebRTC) atau IP Camera');
+            console.log('🔗 IP Camera URL:', STREAM_URL);
+            console.log('💡 Klik tombol untuk beralih mode');
+
+            // Info di console
+            console.log('%c📷 Tips:',
