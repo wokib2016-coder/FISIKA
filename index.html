@@ -78,17 +78,17 @@
             box-shadow: 0 50px 80px -18px rgba(0, 0, 0, 0.9);
         }
 
-        /* VIDEO STREAM - Tanpa mixed content error */
+        /* VIDEO STREAM - Direct stream */
         .video-wrapper {
             position: relative;
             width: 100%;
             border-radius: 2rem;
             overflow: hidden;
             margin-bottom: 1.5rem;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.8);
             box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
             transition: all 0.3s ease;
-            min-height: 320px;
+            min-height: 300px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -98,134 +98,134 @@
             box-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
         }
 
-        .stream-container {
+        /* Stream video element */
+        .video-wrapper #streamVideo {
+            display: block;
             width: 100%;
-            height: 100%;
-            min-height: 320px;
+            height: auto;
+            max-height: 70vh;
+            aspect-ratio: 16 / 9;
+            background: #0a0f1a;
+            border: none;
+            outline: none;
+            object-fit: contain;
+        }
+
+        /* Stream image for MJPEG */
+        .video-wrapper #streamImage {
+            display: none;
+            width: 100%;
+            height: auto;
+            max-height: 70vh;
+            aspect-ratio: 16 / 9;
+            background: #0a0f1a;
+            border: none;
+            outline: none;
+            object-fit: contain;
+        }
+
+        /* Loading overlay */
+        .video-wrapper .loading-overlay {
+            position: absolute;
+            inset: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: #0a0f1a;
+            gap: 1rem;
+            background: rgba(10, 15, 30, 0.85);
+            backdrop-filter: blur(6px);
+            border-radius: 2rem;
+            z-index: 10;
+            transition: opacity 0.6s ease;
+        }
+
+        .video-wrapper .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .video-wrapper .loading-overlay .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.05);
+            border-top-color: #7fb0ff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .video-wrapper .loading-overlay .loading-text {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+
+        .video-wrapper .loading-overlay .loading-url {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 0.65rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Fallback jika stream gagal */
+        .video-wrapper .stream-fallback {
+            display: none;
+            position: absolute;
+            inset: 0;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            background: rgba(10, 15, 30, 0.92);
+            backdrop-filter: blur(8px);
+            border-radius: 2rem;
+            color: #9bb8e8;
             padding: 2rem;
             text-align: center;
-            gap: 1rem;
         }
 
-        .stream-container .stream-icon {
-            font-size: 4.5rem;
-            color: #7fb0ff;
+        .video-wrapper .stream-fallback i {
+            font-size: 3.5rem;
             opacity: 0.25;
-            margin-bottom: 0.3rem;
+            color: #7fb0ff;
         }
 
-        .stream-container .stream-icon .fa-circle {
-            color: #4caf50;
-            font-size: 1rem;
-            animation: blink 1.4s infinite;
-            opacity: 0.8;
+        .video-wrapper .stream-fallback .fallback-title {
+            font-size: 1.1rem;
+            opacity: 0.7;
         }
 
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.1; }
-        }
-
-        .stream-container .stream-title {
-            color: #b0ceff;
-            font-size: 1.3rem;
-            font-weight: 500;
-            letter-spacing: 0.02em;
-        }
-
-        .stream-container .stream-url {
-            color: #7a9ed6;
-            font-size: 0.85rem;
+        .video-wrapper .stream-fallback .fallback-url {
+            font-size: 0.7rem;
+            opacity: 0.35;
             font-family: 'Courier New', monospace;
             background: rgba(255, 255, 255, 0.03);
-            padding: 0.4rem 1.2rem;
-            border-radius: 30px;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.03);
-            word-break: break-all;
         }
 
-        .stream-container .stream-status {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .stream-container .stream-status .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #ff6b6b;
-            display: inline-block;
-        }
-
-        .stream-container .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.8rem;
-            justify-content: center;
+        .video-wrapper .stream-fallback .btn-retry {
             margin-top: 0.3rem;
-        }
-
-        .stream-container .btn-open-stream {
-            padding: 0.7rem 2.2rem;
-            background: linear-gradient(135deg, rgba(70, 150, 255, 0.15), rgba(70, 150, 255, 0.05));
-            border: 1px solid rgba(70, 150, 255, 0.2);
+            padding: 0.5rem 1.8rem;
+            background: rgba(70, 150, 255, 0.1);
+            border: 1px solid rgba(70, 150, 255, 0.15);
             border-radius: 30px;
             color: #8bb4f0;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-family: 'Inter', sans-serif;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
         }
 
-        .stream-container .btn-open-stream:hover {
+        .video-wrapper .stream-fallback .btn-retry:hover {
             background: rgba(70, 150, 255, 0.2);
-            transform: scale(1.03);
-            box-shadow: 0 0 30px rgba(70, 150, 255, 0.1);
-        }
-
-        .stream-container .btn-open-stream i {
-            font-size: 0.9rem;
-        }
-
-        .stream-container .btn-copy-url {
-            padding: 0.7rem 1.5rem;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 30px;
-            color: rgba(255, 255, 255, 0.4);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.85rem;
-            font-family: 'Inter', sans-serif;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .stream-container .btn-copy-url:hover {
-            background: rgba(255, 255, 255, 0.06);
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .stream-container .note {
-            color: rgba(255, 255, 255, 0.12);
-            font-size: 0.6rem;
-            margin-top: 0.2rem;
-            letter-spacing: 0.04em;
-            max-width: 400px;
+            transform: scale(1.02);
         }
 
         .stream-label {
@@ -254,6 +254,16 @@
             font-size: 0.6rem;
             opacity: 0.6;
             font-weight: 300;
+        }
+
+        @keyframes blink {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.15;
+            }
         }
 
         .icon-row {
@@ -561,23 +571,11 @@
             }
             .video-wrapper {
                 border-radius: 1.2rem;
-                min-height: 260px;
+                min-height: 200px;
             }
-            .stream-container {
-                min-height: 260px;
-                padding: 1.5rem;
-            }
-            .stream-container .stream-icon {
-                font-size: 3.5rem;
-            }
-            .stream-container .btn-group {
-                flex-direction: column;
-                align-items: center;
-            }
-            .stream-container .btn-open-stream,
-            .stream-container .btn-copy-url {
-                width: 100%;
-                justify-content: center;
+            .video-wrapper #streamVideo,
+            .video-wrapper #streamImage {
+                max-height: 50vh;
             }
         }
 
@@ -598,42 +596,37 @@
 <body>
     <div class="card">
 
-        <!-- VIDEO STREAM - Tanpa mixed content error -->
+        <!-- VIDEO STREAM - Direct stream di halaman -->
         <div class="video-wrapper" id="videoWrapper">
-            <div class="stream-container" id="streamContainer">
-                <!-- Icon dengan indikator live -->
-                <div class="stream-icon">
-                    <i class="fas fa-video"></i>
-                    <i class="fas fa-circle" style="font-size: 0.8rem; margin-left: 0.3rem; vertical-align: super;"></i>
-                </div>
-                
-                <!-- Title -->
-                <div class="stream-title">Live Stream · Fisika Lab</div>
-                
-                <!-- URL -->
-                <div class="stream-url" id="streamUrlDisplay">http://10.101.209.113/</div>
-                
-                <!-- Status -->
-                <div class="stream-status">
-                    <span class="dot"></span>
-                    <span>Klik tombol di bawah untuk membuka stream</span>
-                </div>
-                
-                <!-- Tombol group -->
-                <div class="btn-group">
-                    <a href="http://10.101.209.113/" target="_blank" class="btn-open-stream" id="btnOpenStream">
-                        <i class="fas fa-external-link-alt"></i> Buka Stream
-                    </a>
-                    <button class="btn-copy-url" id="btnCopyUrl">
-                        <i class="fas fa-copy"></i> Salin URL
-                    </button>
-                </div>
-                
-                <!-- Catatan -->
-                <div class="note">
-                    <i class="fas fa-info-circle"></i> 
-                    Stream diakses melalui tab baru — bebas error mixed content
-                </div>
+            <!-- Loading overlay -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+                <span class="loading-text">Menghubungkan ke stream...</span>
+                <span class="loading-url">http://10.101.209.113/</span>
+            </div>
+
+            <!-- Video element untuk stream -->
+            <video id="streamVideo" autoplay muted playsinline>
+                <source src="http://10.101.209.113/" type="video/mp4" />
+                <source src="http://10.101.209.113/" type="video/ogg" />
+                <source src="http://10.101.209.113/" type="video/webm" />
+                <p>Browser tidak mendukung video tag.</p>
+            </video>
+
+            <!-- Image element untuk MJPEG stream (fallback) -->
+            <img id="streamImage" src="" alt="Live Stream" />
+
+            <!-- Fallback jika stream gagal -->
+            <div class="stream-fallback" id="streamFallback">
+                <i class="fas fa-video-slash"></i>
+                <span class="fallback-title">Tidak dapat terhubung ke stream</span>
+                <span class="fallback-url">http://10.101.209.113/</span>
+                <span style="font-size:0.6rem; opacity:0.3;">
+                    <i class="fas fa-info-circle"></i> Pastikan server stream aktif
+                </span>
+                <button class="btn-retry" onclick="location.reload()">
+                    <i class="fas fa-sync-alt"></i> Coba Lagi
+                </button>
             </div>
         </div>
 
@@ -641,7 +634,7 @@
         <div class="stream-label">
             <i class="fas fa-circle"></i> 
             LIVE STREAM · Fisika Lab
-            <span class="status-text">(akses via tab baru)</span>
+            <span class="status-text">(langsung di halaman)</span>
         </div>
 
         <!-- Ikon fisika -->
@@ -735,77 +728,123 @@
         (function() {
             'use strict';
 
-            // Tidak ada permintaan fetch ke server stream - ZERO mixed content errors!
-            
             const STREAM_URL = 'http://10.101.209.113/';
-            
-            console.log('✅ Halaman dimuat tanpa error mixed content');
-            console.log('📹 Stream URL:', STREAM_URL);
-            console.log('💡 Buka di tab baru untuk mengakses stream tanpa error');
+            const video = document.getElementById('streamVideo');
+            const image = document.getElementById('streamImage');
+            const fallback = document.getElementById('streamFallback');
+            const loading = document.getElementById('loadingOverlay');
+            const wrapper = document.getElementById('videoWrapper');
 
-            // Tombol copy URL
-            const btnCopy = document.getElementById('btnCopyUrl');
-            if (btnCopy) {
-                btnCopy.addEventListener('click', function() {
-                    navigator.clipboard.writeText(STREAM_URL).then(() => {
-                        // Feedback visual
-                        const originalText = btnCopy.innerHTML;
-                        btnCopy.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
-                        btnCopy.style.color = '#4caf50';
-                        btnCopy.style.borderColor = 'rgba(76, 175, 80, 0.3)';
-                        
-                        setTimeout(() => {
-                            btnCopy.innerHTML = originalText;
-                            btnCopy.style.color = '';
-                            btnCopy.style.borderColor = '';
+            let isLoaded = false;
+            let useImageFallback = false;
+            let retryCount = 0;
+            const maxRetries = 2;
+
+            function hideLoading() {
+                if (loading) loading.classList.add('hidden');
+            }
+
+            function showFallback() {
+                if (loading) loading.classList.add('hidden');
+                if (video) video.style.display = 'none';
+                if (image) image.style.display = 'none';
+                if (fallback) fallback.style.display = 'flex';
+            }
+
+            function tryImageStream() {
+                console.log('Mencoba MJPEG stream...');
+                if (video) video.style.display = 'none';
+                if (image) {
+                    image.style.display = 'block';
+                    image.src = STREAM_URL + '?_=' + Date.now();
+                    
+                    image.onload = function() {
+                        console.log('✅ MJPEG stream berhasil dimuat!');
+                        isLoaded = true;
+                        hideLoading();
+                        if (fallback) fallback.style.display = 'none';
+                        // Refresh image setiap 2 detik untuk MJPEG
+                        setInterval(function() {
+                            if (image.style.display !== 'none') {
+                                image.src = STREAM_URL + '?_=' + Date.now();
+                            }
                         }, 2000);
-                    }).catch(() => {
-                        // Fallback jika clipboard tidak didukung
-                        const urlDisplay = document.getElementById('streamUrlDisplay');
-                        if (urlDisplay) {
-                            const range = document.createRange();
-                            range.selectNode(urlDisplay);
-                            window.getSelection().removeAllRanges();
-                            window.getSelection().addRange(range);
-                            document.execCommand('copy');
-                            window.getSelection().removeAllRanges();
-                            
-                            // Feedback
-                            btnCopy.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
-                            setTimeout(() => {
-                                btnCopy.innerHTML = '<i class="fas fa-copy"></i> Salin URL';
-                            }, 2000);
+                    };
+                    
+                    image.onerror = function() {
+                        console.warn('MJPEG stream gagal dimuat');
+                        if (retryCount < maxRetries) {
+                            retryCount++;
+                            setTimeout(tryImageStream, 3000);
+                        } else {
+                            showFallback();
                         }
-                    });
+                    };
+                }
+            }
+
+            // Event untuk video
+            if (video) {
+                video.addEventListener('loadeddata', function() {
+                    console.log('✅ Video stream berhasil dimuat!');
+                    isLoaded = true;
+                    hideLoading();
+                    if (fallback) fallback.style.display = 'none';
+                    if (video) video.style.display = 'block';
+                    if (image) image.style.display = 'none';
+                });
+
+                video.addEventListener('canplay', function() {
+                    if (!isLoaded) {
+                        isLoaded = true;
+                        hideLoading();
+                        if (fallback) fallback.style.display = 'none';
+                    }
+                });
+
+                video.addEventListener('error', function(e) {
+                    console.warn('Video stream error, mencoba MJPEG...');
+                    if (!isLoaded) {
+                        tryImageStream();
+                    }
+                });
+
+                // Timeout untuk video
+                setTimeout(function() {
+                    if (!isLoaded && video.readyState === 0) {
+                        console.warn('Video timeout, mencoba MJPEG...');
+                        tryImageStream();
+                    }
+                }, 5000);
+            } else {
+                tryImageStream();
+            }
+
+            // Jika semua gagal dalam 15 detik
+            setTimeout(function() {
+                if (!isLoaded) {
+                    showFallback();
+                }
+            }, 15000);
+
+            // Tombol retry
+            const retryBtn = document.querySelector('.btn-retry');
+            if (retryBtn) {
+                retryBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    location.reload();
                 });
             }
 
-            // Tombol buka stream - sudah menggunakan href target _blank
-            const btnOpen = document.getElementById('btnOpenStream');
-            if (btnOpen) {
-                btnOpen.addEventListener('click', function(e) {
-                    console.log('📹 Membuka stream di tab baru...');
-                    // Tidak perlu melakukan apa-apa, link sudah handle
-                });
-            }
+            console.log('📹 Stream URL:', STREAM_URL);
+            console.log('💡 Stream akan ditampilkan langsung di halaman');
 
-            // Status indikator - hanya visual, tanpa permintaan jaringan
-            const statusDot = document.querySelector('.stream-status .dot');
-            const statusText = document.querySelector('.stream-status span:last-child');
-            
-            // Ubah status menjadi hijau setelah beberapa detik (hanya visual)
-            setTimeout(() => {
-                if (statusDot) {
-                    statusDot.style.background = '#4caf50';
+            // Coba muat ulang video jika gagal
+            setTimeout(function() {
+                if (!isLoaded && video && video.readyState === 0) {
+                    video.load();
                 }
-                if (statusText) {
-                    statusText.textContent = 'Klik "Buka Stream" untuk memulai';
-                    statusText.style.color = 'rgba(76, 175, 80, 0.6)';
-                }
-            }, 1500);
-
-            console.log('✅ Siap! Tidak ada mixed content error.');
-            console.log('💡 Tips: Buka stream di tab baru untuk pengalaman terbaik.');
+            }, 3000);
 
         })();
     </script>
