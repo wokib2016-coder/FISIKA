@@ -78,7 +78,7 @@
             box-shadow: 0 50px 80px -18px rgba(0, 0, 0, 0.9);
         }
 
-        /* VIDEO STREAM - Menggunakan iframe dengan proxy */
+        /* VIDEO STREAM */
         .video-wrapper {
             position: relative;
             width: 100%;
@@ -88,7 +88,7 @@
             background: rgba(0, 0, 0, 0.6);
             box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
             transition: all 0.3s ease;
-            min-height: 250px;
+            min-height: 300px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -98,112 +98,111 @@
             box-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
         }
 
-        .video-wrapper iframe {
-            display: block;
+        .stream-container {
             width: 100%;
             height: 100%;
-            min-height: 250px;
-            aspect-ratio: 16 / 9;
-            background: #0a0f1a;
-            border: none;
-            outline: none;
-        }
-
-        .video-wrapper .video-fallback {
-            display: none;
-            position: absolute;
-            inset: 0;
-            background: rgba(10, 15, 30, 0.92);
-            backdrop-filter: blur(8px);
-            color: #9bb8e8;
-            font-size: 0.95rem;
+            min-height: 300px;
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0.8rem;
-            padding: 1.5rem;
+            background: #0a0f1a;
+            padding: 2rem;
             text-align: center;
-            border-radius: 2rem;
+            gap: 1rem;
         }
 
-        .video-wrapper .video-fallback i {
-            font-size: 3.5rem;
-            opacity: 0.25;
+        .stream-container .stream-icon {
+            font-size: 4rem;
             color: #7fb0ff;
+            opacity: 0.3;
+            margin-bottom: 0.5rem;
         }
 
-        .video-wrapper .video-fallback span {
-            opacity: 0.7;
+        .stream-container .stream-title {
+            color: #b0ceff;
+            font-size: 1.2rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
         }
 
-        .video-wrapper .video-fallback .url-display {
-            font-size: 0.7rem;
-            opacity: 0.35;
+        .stream-container .stream-url {
+            color: #7a9ed6;
+            font-size: 0.85rem;
             font-family: 'Courier New', monospace;
-            word-break: break-all;
             background: rgba(255, 255, 255, 0.03);
-            padding: 0.3rem 1rem;
-            border-radius: 20px;
+            padding: 0.4rem 1.2rem;
+            border-radius: 30px;
             border: 1px solid rgba(255, 255, 255, 0.03);
+            word-break: break-all;
         }
 
-        .video-wrapper .video-fallback .btn-retry {
+        .stream-container .stream-status {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stream-container .stream-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
+        .stream-container .btn-open-stream {
             margin-top: 0.5rem;
-            padding: 0.5rem 1.5rem;
+            padding: 0.6rem 2rem;
             background: rgba(70, 150, 255, 0.1);
             border: 1px solid rgba(70, 150, 255, 0.15);
             border-radius: 30px;
             color: #8bb4f0;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-family: 'Inter', sans-serif;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .video-wrapper .video-fallback .btn-retry:hover {
+        .stream-container .btn-open-stream:hover {
             background: rgba(70, 150, 255, 0.2);
             transform: scale(1.02);
         }
 
-        .video-wrapper .loading-indicator {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            background: rgba(10, 15, 30, 0.7);
-            backdrop-filter: blur(4px);
-            border-radius: 2rem;
-            z-index: 5;
-            transition: opacity 0.5s ease;
+        .stream-container .note {
+            color: rgba(255, 255, 255, 0.15);
+            font-size: 0.6rem;
+            margin-top: 0.3rem;
+            letter-spacing: 0.04em;
         }
 
-        .video-wrapper .loading-indicator.hidden {
-            opacity: 0;
-            pointer-events: none;
+        /* Tampilan ketika stream aktif (disembunyikan secara default) */
+        .stream-container .stream-active {
+            display: none;
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
         }
 
-        .video-wrapper .loading-indicator .spinner {
-            width: 48px;
-            height: 48px;
-            border: 3px solid rgba(255, 255, 255, 0.05);
-            border-top-color: #7fb0ff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .video-wrapper .loading-indicator span {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 0.8rem;
-            letter-spacing: 0.05em;
+        .stream-container .stream-active iframe {
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+            border: none;
+            outline: none;
+            background: #0a0f1a;
         }
 
         .stream-label {
@@ -224,7 +223,7 @@
 
         .stream-label i {
             font-size: 0.6rem;
-            color: #4caf50;
+            color: #ff6b6b;
             animation: blink 1.4s infinite;
         }
 
@@ -235,13 +234,8 @@
         }
 
         @keyframes blink {
-            0%,
-            100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.15;
-            }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.15; }
         }
 
         .icon-row {
@@ -549,10 +543,14 @@
             }
             .video-wrapper {
                 border-radius: 1.2rem;
-                min-height: 180px;
+                min-height: 220px;
             }
-            .video-wrapper iframe {
-                min-height: 180px;
+            .stream-container {
+                min-height: 220px;
+                padding: 1.5rem;
+            }
+            .stream-container .stream-icon {
+                font-size: 3rem;
             }
         }
 
@@ -573,34 +571,46 @@
 <body>
     <div class="card">
 
-        <!-- VIDEO STREAM - Menggunakan iframe dengan proxy untuk menghindari mixed content -->
+        <!-- VIDEO STREAM -->
         <div class="video-wrapper" id="videoWrapper">
-            <!-- Loading indicator -->
-            <div class="loading-indicator" id="loadingIndicator">
-                <div class="spinner"></div>
-                <span>Menghubungkan ke stream...</span>
-            </div>
+            <div class="stream-container" id="streamContainer">
+                <!-- Icon -->
+                <div class="stream-icon">
+                    <i class="fas fa-video"></i>
+                </div>
+                
+                <!-- Title -->
+                <div class="stream-title">Live Stream · Fisika Lab</div>
+                
+                <!-- URL -->
+                <div class="stream-url">http://10.101.209.113/</div>
+                
+                <!-- Status -->
+                <div class="stream-status">
+                    <span class="dot"></span>
+                    <span>Server internal — periksa koneksi</span>
+                </div>
+                
+                <!-- Tombol buka stream di tab baru (cara aman) -->
+                <a href="http://10.101.209.113/" target="_blank" class="btn-open-stream">
+                    <i class="fas fa-external-link-alt"></i> Buka Stream di Tab Baru
+                </a>
+                
+                <!-- Catatan -->
+                <div class="note">
+                    <i class="fas fa-info-circle"></i> 
+                    Buka di tab baru untuk menghindari masalah mixed content
+                </div>
 
-            <!-- Iframe dengan proxy untuk mengatasi mixed content -->
-            <iframe id="streamIframe" 
-                    src="" 
-                    frameborder="0" 
-                    allowfullscreen
-                    allow="autoplay; encrypted-media"
-                    sandbox="allow-same-origin allow-scripts allow-forms">
-            </iframe>
-
-            <!-- Fallback -->
-            <div class="video-fallback" id="videoFallback">
-                <i class="fas fa-video-slash"></i>
-                <span>Tidak dapat terhubung ke stream</span>
-                <span class="url-display">http://10.101.209.113/</span>
-                <span style="font-size:0.6rem; opacity:0.3; margin-top:0.3rem;">
-                    <i class="fas fa-info-circle"></i> Koneksi ke server tidak tersedia
-                </span>
-                <button class="btn-retry" onclick="location.reload()">
-                    <i class="fas fa-sync-alt"></i> Coba Lagi
-                </button>
+                <!-- Area untuk iframe (disembunyikan, hanya untuk fallback) -->
+                <div class="stream-active" id="streamActive">
+                    <iframe id="streamIframe" 
+                            src="" 
+                            frameborder="0" 
+                            allowfullscreen
+                            allow="autoplay; encrypted-media">
+                    </iframe>
+                </div>
             </div>
         </div>
 
@@ -608,7 +618,7 @@
         <div class="stream-label">
             <i class="fas fa-circle"></i> 
             LIVE STREAM · Fisika Lab
-            <span class="status-text">(server internal)</span>
+            <span class="status-text">(buka di tab baru)</span>
         </div>
 
         <!-- Ikon fisika -->
@@ -702,119 +712,49 @@
         (function() {
             'use strict';
 
-            const iframe = document.getElementById('streamIframe');
-            const fallback = document.getElementById('videoFallback');
-            const loading = document.getElementById('loadingIndicator');
-            const wrapper = document.getElementById('videoWrapper');
+            // Tidak ada lagi mixed content error karena kita tidak memuat stream langsung di halaman
+            // Kita hanya menampilkan informasi dan tombol untuk membuka stream di tab baru
+            
+            console.log('✅ Halaman dimuat tanpa error mixed content');
+            console.log('📹 Stream URL: http://10.101.209.113/');
+            console.log('💡 Buka di tab baru untuk mengakses stream');
 
-            const STREAM_URL = 'http://10.101.209.113/';
-            let loadAttempts = 0;
-            const maxAttempts = 3;
-
-            function showFallback() {
-                if (loading) loading.classList.add('hidden');
-                if (iframe) iframe.style.display = 'none';
-                if (fallback) fallback.style.display = 'flex';
-            }
-
-            function hideFallback() {
-                if (fallback) fallback.style.display = 'none';
-                if (iframe) iframe.style.display = 'block';
-            }
-
-            function hideLoading() {
-                if (loading) loading.classList.add('hidden');
-            }
-
-            function loadStream() {
-                loadAttempts++;
-                console.log(`Mencoba memuat stream (percobaan ${loadAttempts})...`);
-
-                // Tampilkan loading
-                if (loading) loading.classList.remove('hidden');
-                hideFallback();
-                if (iframe) iframe.style.display = 'block';
-
-                // Muat iframe dengan URL stream
-                if (iframe) {
-                    // Gunakan teknik cache busting untuk mencegah caching
-                    const urlWithCache = STREAM_URL + (STREAM_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
-                    iframe.src = urlWithCache;
-                }
-
-                // Set timeout untuk deteksi kegagalan
-                setTimeout(() => {
-                    // Cek apakah iframe berhasil dimuat (tidak ada cara langsung, kita gunakan pendekatan pragmatis)
-                    // Jika masih loading setelah timeout, anggap gagal
-                    if (loadAttempts < maxAttempts) {
-                        console.log(`Percobaan ${loadAttempts} gagal, mencoba lagi...`);
-                        loadStream();
-                    } else {
-                        console.log('Semua percobaan gagal, menampilkan fallback');
-                        showFallback();
-                    }
-                }, 6000);
-            }
-
-            // Event listener untuk iframe load
-            if (iframe) {
-                iframe.addEventListener('load', function() {
-                    console.log('Iframe loaded');
-                    hideLoading();
-                    hideFallback();
-                    // Reset attempts karena berhasil
-                    loadAttempts = 0;
+            // Jika pengguna mengklik tombol, buka di tab baru
+            const btnOpen = document.querySelector('.btn-open-stream');
+            if (btnOpen) {
+                btnOpen.addEventListener('click', function(e) {
+                    // Sudah menggunakan href target _blank, tidak perlu tambahan
+                    console.log('Membuka stream di tab baru...');
                 });
+            }
 
-                iframe.addEventListener('error', function(e) {
-                    console.warn('Iframe error:', e);
-                    if (loadAttempts < maxAttempts) {
-                        loadStream();
-                    } else {
-                        showFallback();
+            // Cek koneksi ke server (hanya untuk informasi, tidak memuat konten)
+            function checkConnection() {
+                fetch('http://10.101.209.113/', {
+                    method: 'HEAD',
+                    mode: 'no-cors',
+                    cache: 'no-cache'
+                })
+                .then(() => {
+                    console.log('✅ Server stream terdeteksi');
+                    const statusEl = document.querySelector('.stream-status span:last-child');
+                    if (statusEl) {
+                        statusEl.textContent = 'Server aktif — siap terhubung';
+                        statusEl.style.color = 'rgba(76, 175, 80, 0.7)';
+                    }
+                })
+                .catch(() => {
+                    console.log('⚠️ Server stream tidak terdeteksi (mungkin offline)');
+                    const statusEl = document.querySelector('.stream-status span:last-child');
+                    if (statusEl) {
+                        statusEl.textContent = 'Server tidak terdeteksi — periksa koneksi';
+                        statusEl.style.color = 'rgba(255, 107, 107, 0.7)';
                     }
                 });
             }
 
-            // Mulai load stream
-            loadStream();
-
-            // Jika semua gagal, tampilkan fallback setelah 15 detik
-            setTimeout(function() {
-                if (fallback && fallback.style.display !== 'flex') {
-                    // Cek apakah iframe terlihat dan memiliki konten
-                    if (iframe) {
-                        try {
-                            // Cek apakah iframe bisa diakses
-                            const doc = iframe.contentDocument || iframe.contentWindow.document;
-                            if (doc && doc.readyState === 'complete') {
-                                hideLoading();
-                                return;
-                            }
-                        } catch (e) {
-                            // Cross-origin, tidak bisa diakses
-                            console.log('Cross-origin iframe, tidak bisa dicek');
-                        }
-                    }
-                    // Jika masih loading, tampilkan fallback
-                    if (loadAttempts >= maxAttempts) {
-                        showFallback();
-                    }
-                }
-            }, 15000);
-
-            // Tombol retry
-            const retryBtn = document.querySelector('.btn-retry');
-            if (retryBtn) {
-                retryBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    location.reload();
-                });
-            }
-
-            // Informasi tentang mixed content
-            console.log('Note: Stream menggunakan HTTP, pastikan server stream dapat diakses.');
-            console.log('URL Stream:', STREAM_URL);
+            // Cek koneksi setelah halaman dimuat
+            setTimeout(checkConnection, 1000);
 
         })();
     </script>
