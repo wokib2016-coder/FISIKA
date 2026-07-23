@@ -1,17 +1,16 @@
-Berikut adalah kode HTML untuk perkenalan yang indah dengan tema Fisika dan profesi guru. Ini adalah halaman web satu file yang menampilkan kartu profil bergaya modern dengan efek visual yang elegan.
-```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Perkenalan · Fisika · Guru</title>
-  <!-- Font & icon -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fisica · Guru Fisika</title>
+  <!-- Google Font & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <style>
+    /* ----- reset & dasar ----- */
     * {
       margin: 0;
       padding: 0;
@@ -21,231 +20,277 @@ Berikut adalah kode HTML untuk perkenalan yang indah dengan tema Fisika dan prof
     body {
       min-height: 100vh;
       display: flex;
-      justify-content: center;
       align-items: center;
-      background: radial-gradient(circle at 10% 30%, #0b1a2e, #030712);
+      justify-content: center;
+      background: #0b1424;
       font-family: 'Inter', sans-serif;
       padding: 1.5rem;
       position: relative;
       overflow-x: hidden;
     }
 
-    /* efek partikel latar (abstrak) */
+    /* latar belakang dengan gradasi dan efek bintang/partikel */
     body::before {
       content: '';
-      position: absolute;
+      position: fixed;
       inset: 0;
-      background-image: 
-        radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.08), transparent),
-        radial-gradient(2px 2px at 40% 70%, rgba(255,255,255,0.06), transparent),
-        radial-gradient(3px 3px at 80% 20%, rgba(255,255,255,0.10), transparent),
-        radial-gradient(2px 2px at 10% 90%, rgba(255,255,255,0.05), transparent),
-        radial-gradient(2px 2px at 70% 80%, rgba(255,255,255,0.07), transparent),
-        radial-gradient(4px 4px at 95% 50%, rgba(255,255,255,0.04), transparent);
-      background-size: 200% 200%;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(20, 60, 120, 0.25) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(60, 30, 120, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(10, 40, 80, 0.3) 0%, transparent 50%),
+        #0b1424;
+      z-index: 0;
+    }
+
+    /* partikel kecil (bintang) */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1.5px 1.5px at 10% 10%, rgba(255, 255, 255, 0.2), transparent),
+        radial-gradient(1.5px 1.5px at 25% 40%, rgba(255, 255, 255, 0.15), transparent),
+        radial-gradient(2px 2px at 55% 15%, rgba(255, 255, 255, 0.25), transparent),
+        radial-gradient(1.5px 1.5px at 70% 60%, rgba(255, 255, 255, 0.1), transparent),
+        radial-gradient(2px 2px at 90% 30%, rgba(255, 255, 255, 0.2), transparent),
+        radial-gradient(1.5px 1.5px at 15% 80%, rgba(255, 255, 255, 0.1), transparent),
+        radial-gradient(1.5px 1.5px at 45% 90%, rgba(255, 255, 255, 0.15), transparent),
+        radial-gradient(2px 2px at 80% 85%, rgba(255, 255, 255, 0.1), transparent);
+      background-size: 100% 100%;
       pointer-events: none;
       z-index: 0;
     }
 
+    /* ----- kartu utama ----- */
     .card {
-      max-width: 720px;
+      max-width: 780px;
       width: 100%;
-      background: rgba(255, 255, 255, 0.04);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-radius: 3rem 3rem 2rem 2rem;
-      padding: 2.8rem 2.8rem 3.2rem;
-      box-shadow: 0 30px 50px -15px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.02) inset;
-      border: 1px solid rgba(255, 255, 255, 0.03);
+      background: rgba(12, 22, 40, 0.55);
+      backdrop-filter: blur(16px) saturate(1.2);
+      -webkit-backdrop-filter: blur(16px) saturate(1.2);
+      border-radius: 3.5rem 3.5rem 2.5rem 2.5rem;
+      padding: 3rem 3rem 3.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      box-shadow: 0 40px 70px -20px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
       position: relative;
       z-index: 2;
-      transition: transform 0.3s ease;
+      transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.1), box-shadow 0.3s;
     }
 
     .card:hover {
-      transform: scale(1.005);
+      transform: translateY(-4px) scale(1.003);
+      box-shadow: 0 50px 80px -18px rgba(0, 0, 0, 0.9);
     }
 
-    /* ornamen ilmiah */
-    .icon-ornament {
+    /* ornamen ikon fisika */
+    .icon-row {
       display: flex;
       justify-content: center;
-      gap: 1.2rem;
+      gap: 1.6rem;
       margin-bottom: 1.8rem;
-      color: rgba(255, 255, 255, 0.15);
-      font-size: 2rem;
+      color: rgba(255, 255, 255, 0.08);
+      font-size: 1.7rem;
       letter-spacing: 0.3rem;
+      flex-wrap: wrap;
     }
 
-    .icon-ornament i {
+    .icon-row i {
+      color: #8bbaff;
+      opacity: 0.35;
+      filter: drop-shadow(0 0 8px rgba(70, 140, 255, 0.15));
       transition: all 0.3s ease;
-      color: #9bb8e0;
-      opacity: 0.5;
-      filter: drop-shadow(0 0 5px #4f7db0);
     }
 
-    .icon-ornament i:hover {
-      opacity: 0.9;
-      transform: scale(1.1) rotate(8deg);
-      color: #c0dbff;
+    .icon-row i:hover {
+      opacity: 0.8;
+      transform: scale(1.15) rotate(6deg);
+      color: #b6d4ff;
     }
 
+    /* badge */
     .badge {
       display: inline-block;
-      background: rgba(100, 180, 255, 0.08);
-      border: 1px solid rgba(100, 180, 255, 0.15);
-      backdrop-filter: blur(4px);
-      padding: 0.4rem 1.4rem;
-      border-radius: 40px;
-      font-size: 0.75rem;
-      letter-spacing: 0.08em;
+      background: rgba(70, 150, 255, 0.07);
+      border: 1px solid rgba(70, 150, 255, 0.12);
+      padding: 0.45rem 1.6rem;
+      border-radius: 60px;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: #aac8ff;
+      color: #b0ceff;
       font-weight: 500;
       margin-bottom: 1.2rem;
-      box-shadow: 0 0 12px rgba(60, 130, 255, 0.1);
+      backdrop-filter: blur(4px);
+      box-shadow: 0 0 20px rgba(50, 120, 255, 0.05);
     }
 
+    .badge i {
+      margin-right: 0.5rem;
+      font-size: 0.7rem;
+      color: #7fb0ff;
+    }
+
+    /* NAMA: Fisica */
     .nama {
-      font-size: 3.8rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 4.2rem;
       font-weight: 700;
       letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #f0f9ff 0%, #b6d4ff 80%);
+      line-height: 1.05;
+      background: linear-gradient(145deg, #f0f8ff 0%, #b8d6ff 70%, #88b5ff 100%);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      line-height: 1.1;
-      margin-bottom: 0.3rem;
-      text-shadow: 0 0 30px rgba(80, 160, 255, 0.15);
+      text-shadow: 0 0 40px rgba(80, 160, 255, 0.2);
+      margin-bottom: 0.2rem;
     }
 
+    /* sub: pekerjaan */
     .subhead {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.6rem 1.2rem;
+      gap: 0.8rem 1.5rem;
       margin-bottom: 2rem;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
       padding-bottom: 1.2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     }
 
     .pekerjaan {
       font-size: 1.2rem;
       font-weight: 400;
-      color: #bfd9ff;
+      color: #d0e4ff;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 0.2rem 1.2rem 0.2rem 1rem;
+      border-radius: 60px;
+      border-left: 2.5px solid #5f9eff;
       letter-spacing: 0.02em;
-      background: rgba(255,255,255,0.02);
-      padding: 0.2rem 1rem 0.2rem 0.8rem;
-      border-radius: 30px;
-      border-left: 2px solid #6aa6ff;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .pekerjaan i {
-      margin-right: 0.6rem;
-      color: #7eb2ff;
+      color: #7fb0ff;
       font-size: 1rem;
     }
 
-    .field-icon {
+    .tag-fisika {
       display: flex;
-      gap: 0.4rem;
-      color: #7b9ed6;
-      font-size: 1rem;
+      gap: 0.5rem;
+      color: #7a9ed6;
+      font-size: 0.75rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
     }
 
-    .field-icon i {
-      background: rgba(255,255,255,0.02);
-      padding: 0.3rem 0.7rem;
+    .tag-fisika span {
+      background: rgba(255, 255, 255, 0.02);
+      padding: 0.2rem 0.9rem;
       border-radius: 30px;
-      border: 1px solid rgba(255,255,255,0.03);
-      font-size: 0.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.03);
     }
 
+    /* deskripsi perkenalan */
     .deskripsi {
-      margin: 2.2rem 0 2.5rem;
-      color: rgba(220, 240, 255, 0.85);
+      margin: 2rem 0 2.2rem;
+      padding-left: 1.6rem;
+      border-left: 3px solid rgba(100, 170, 255, 0.15);
+      color: rgba(215, 235, 255, 0.85);
       font-weight: 300;
-      line-height: 1.7;
+      line-height: 1.8;
       font-size: 1.1rem;
-      padding-left: 0.4rem;
-      border-left: 3px solid rgba(100, 180, 255, 0.2);
-      padding-left: 1.4rem;
-      text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .deskripsi p {
+      margin-bottom: 0.6rem;
     }
 
     .deskripsi strong {
-      color: #d6eaff;
+      color: #dcebff;
       font-weight: 500;
-      background: linear-gradient(135deg, #b0d0ff, #7fb0ff);
+      background: linear-gradient(135deg, #b8d4ff, #8bb6ff);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
+      font-weight: 600;
     }
 
-    .highlight-fisika {
+    .highlight {
       display: inline-block;
-      background: rgba(80, 160, 255, 0.03);
+      background: rgba(60, 140, 255, 0.04);
       padding: 0 0.3rem;
-      border-radius: 6px;
+      border-radius: 4px;
+      color: #c8ddff;
       font-weight: 400;
-      color: #cddfff;
     }
 
-    .quote {
-      font-style: italic;
-      font-size: 1rem;
-      color: #9bb8e8;
+    .quote-block {
+      background: rgba(0, 20, 50, 0.25);
+      border-radius: 50px;
+      padding: 0.9rem 1.8rem;
       margin: 1.5rem 0 2rem;
-      padding: 0.8rem 1.5rem;
-      border-radius: 30px;
-      background: rgba(0, 20, 50, 0.3);
-      border: 1px solid rgba(255,255,255,0.02);
-      backdrop-filter: blur(2px);
-      letter-spacing: 0.01em;
+      border: 1px solid rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(4px);
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.8rem;
+      font-style: italic;
+      color: #b3cef5;
+      font-size: 1rem;
     }
 
-    .quote i {
+    .quote-block i {
       color: #5f9eff;
+      opacity: 0.5;
       font-size: 1.2rem;
-      opacity: 0.6;
     }
 
+    .quote-block span {
+      font-style: normal;
+      font-weight: 300;
+      margin-left: auto;
+      opacity: 0.6;
+      font-size: 0.8rem;
+      letter-spacing: 0.02em;
+    }
+
+    /* sosial / kontak */
     .sosial {
       display: flex;
       flex-wrap: wrap;
       justify-content: flex-start;
-      gap: 1rem 1.8rem;
-      margin-top: 2.2rem;
+      gap: 1.2rem 2rem;
+      margin-top: 2rem;
       padding-top: 1.8rem;
-      border-top: 1px solid rgba(255,255,255,0.03);
+      border-top: 1px solid rgba(255, 255, 255, 0.02);
     }
 
     .sosial-item {
       display: flex;
       align-items: center;
       gap: 0.6rem;
-      color: #a2beea;
+      color: #aac2ec;
       font-size: 0.9rem;
       font-weight: 300;
-      transition: 0.2s;
+      transition: 0.25s ease;
       text-decoration: none;
       border-bottom: 1px solid transparent;
+      padding-bottom: 0.1rem;
     }
 
     .sosial-item i {
-      font-size: 1.1rem;
       width: 1.8rem;
       text-align: center;
-      color: #81aeff;
-      transition: 0.2s;
+      font-size: 1.1rem;
+      color: #7faeff;
+      transition: 0.25s;
     }
 
     .sosial-item:hover {
-      color: #d7e9ff;
-      border-bottom: 1px solid rgba(130, 180, 255, 0.2);
+      color: #e2efff;
+      border-bottom-color: rgba(100, 170, 255, 0.2);
     }
 
     .sosial-item:hover i {
@@ -253,133 +298,152 @@ Berikut adalah kode HTML untuk perkenalan yang indah dengan tema Fisika dan prof
       transform: translateX(3px);
     }
 
-    /* responsif */
-    @media (max-width: 550px) {
-      .card { padding: 2rem 1.5rem; }
-      .nama { font-size: 2.8rem; }
-      .subhead { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
-      .pekerjaan { font-size: 1rem; }
-    }
-
-    /* animasi subtle */
-    .card {
-      animation: fadeSlide 1s ease forwards;
-    }
-
-    @keyframes fadeSlide {
-      0% { opacity: 0; transform: translateY(40px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    .nama, .badge, .deskripsi, .quote, .sosial {
-      animation: fadeIn 1.2s ease forwards;
-    }
-    .deskripsi { animation-delay: 0.1s; }
-    .quote { animation-delay: 0.2s; }
-    .sosial { animation-delay: 0.3s; }
-    @keyframes fadeIn {
-      0% { opacity: 0; transform: translateY(10px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    /* sentuhan fisikawan */
-    .particle-symbol {
+    /* dekorasi molekul / fisika */
+    .molekul {
       position: absolute;
-      font-size: 1.8rem;
-      opacity: 0.02;
+      bottom: 1.5rem;
+      right: 2rem;
+      font-size: 1.6rem;
+      opacity: 0.04;
+      color: #b0ceff;
       pointer-events: none;
-      color: white;
-      right: 1rem;
-      bottom: 1rem;
-      transform: rotate(12deg);
       font-family: 'Times New Roman', serif;
+      letter-spacing: 2px;
+    }
+
+    .molekul i {
+      margin: 0 0.1rem;
+    }
+
+    /* animasi masuk */
+    .card {
+      animation: muncul 0.9s cubic-bezier(0.15, 0.9, 0.2, 1) forwards;
+    }
+
+    @keyframes muncul {
+      0% { opacity: 0; transform: translateY(50px) scale(0.97); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .nama, .badge, .deskripsi, .quote-block, .sosial {
+      animation: fadeNaik 0.8s ease forwards;
+    }
+
+    .deskripsi { animation-delay: 0.08s; }
+    .quote-block { animation-delay: 0.15s; }
+    .sosial { animation-delay: 0.25s; }
+
+    @keyframes fadeNaik {
+      0% { opacity: 0; transform: translateY(12px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* responsif */
+    @media (max-width: 600px) {
+      .card { padding: 2rem 1.5rem 2.2rem; border-radius: 2.5rem; }
+      .nama { font-size: 3rem; }
+      .subhead { flex-direction: column; align-items: flex-start; gap: 0.3rem; }
+      .pekerjaan { font-size: 1rem; padding: 0.2rem 1rem; }
+      .deskripsi { font-size: 1rem; padding-left: 1rem; }
+      .quote-block { flex-wrap: wrap; padding: 0.8rem 1.2rem; }
+    }
+
+    @media (max-width: 430px) {
+      .nama { font-size: 2.6rem; }
+      .icon-row { gap: 1rem; font-size: 1.3rem; }
+      .sosial { gap: 0.8rem 1.2rem; }
     }
   </style>
 </head>
 <body>
   <div class="card">
 
-    <!-- ornamen fisika -->
-    <div class="icon-ornament">
+    <!-- deret ikon fisika -->
+    <div class="icon-row">
       <i class="fas fa-atom"></i>
-      <i class="fas fa-flask"></i>
-      <i class="fas fa-chart-line"></i>
-      <i class="fas fa-gravity"></i>
+      <i class="fas fa-microscope"></i>
+      <i class="fas fa-satellite"></i>
       <i class="fas fa-bolt"></i>
+      <i class="fas fa-chart-pie"></i>
     </div>
 
-    <!-- badge -->
+    <!-- label -->
     <div class="badge">
-      <i class="fas fa-graduation-cap" style="margin-right: 0.4rem;"></i> 
-      Fisika · Ilmu & Inspirasi
+      <i class="fas fa-graduation-cap"></i> Fisika · Membumi & Menginspirasi
     </div>
 
-    <!-- NAMA (dengan gaya fisika) -->
-    <h1 class="nama">Alifa Zahrani</h1>
+    <!-- NAMA: Fisica -->
+    <h1 class="nama">Fisica</h1>
 
+    <!-- pekerjaan: Guru -->
     <div class="subhead">
       <span class="pekerjaan">
         <i class="fas fa-chalkboard-teacher"></i> Guru Fisika
       </span>
-      <span class="field-icon">
-        <i class="fas fa-circle" style="font-size: 0.4rem; vertical-align: middle; color: #6aa6ff;"></i>
-        <i class="fas fa-circle" style="font-size: 0.4rem; vertical-align: middle; color: #4f8ed6;"></i>
-        <i class="fas fa-circle" style="font-size: 0.4rem; vertical-align: middle; color: #2a5f9a;"></i>
-      </span>
+      <div class="tag-fisika">
+        <span><i class="fas fa-circle" style="font-size: 0.3rem; vertical-align: middle; color: #5f9eff;"></i> Mekanika</span>
+        <span><i class="fas fa-circle" style="font-size: 0.3rem; vertical-align: middle; color: #5f9eff;"></i> Termodinamika</span>
+        <span><i class="fas fa-circle" style="font-size: 0.3rem; vertical-align: middle; color: #5f9eff;"></i> Gelombang</span>
+      </div>
     </div>
 
-    <!-- Deskripsi perkenalan yang indah -->
+    <!-- perkenalan yang indah -->
     <div class="deskripsi">
-      <p style="margin-bottom: 0.5rem;">
-        <i class="fas fa-quote-left" style="opacity: 0.3; margin-right: 6px; color: #7fb0ff;"></i>
-        Setiap gerak benda, setiap cahaya yang merambat, 
-        dan setiap getaran yang tak terlihat — semuanya adalah <strong>bahasa alam</strong>.
-      </p>
       <p>
-        Saya <strong>Alifa</strong>, seorang guru fisika yang percaya bahwa 
-        <span class="highlight-fisika">ilmu fisika</span> adalah jembatan antara rasa ingin tahu dan pemahaman. 
-        Bukan hanya rumus, tetapi <strong>cerita tentang semesta</strong> yang ingin saya bagikan 
-        kepada setiap murid. Dari <strong>mekanika</strong> hingga <strong>gelombang</strong>, 
-        dari <strong>energi</strong> hingga <strong>relativitas</strong> — saya hadir untuk 
-        menyalakan percikan <strong>kekaguman</strong>.
+        <i class="fas fa-quote-left" style="opacity: 0.2; margin-right: 6px; color: #7fb0ff;"></i>
+        Saya <strong>Fisica</strong> — seorang guru yang percaya bahwa fisika adalah 
+        <span class="highlight">puisi alam semesta</span>. 
+        Dari gerak bintang hingga getaran senar, 
+        saya mengajar bukan sekadar rumus, melainkan <strong>cara berpikir</strong> dan 
+        <strong>kagum pada realitas</strong>.
+      </p>
+      <p style="margin-top: 0.4rem;">
+        Setiap hari, saya berbagi cerita tentang <span class="highlight">energi</span>, 
+        <span class="highlight">materi</span>, dan <span class="highlight">ruang-waktu</span>. 
+        Bagi saya, ruang kelas adalah laboratorium imajinasi, 
+        dan setiap murid adalah <strong>penjelajah</strong> yang sedang menemukan 
+        keajaiban di balik fenomena.
       </p>
     </div>
 
     <!-- kutipan khas -->
-    <div class="quote">
+    <div class="quote-block">
       <i class="fas fa-quote-right"></i>
-      “Fisika bukanlah tentang menghafal, melainkan tentang merasakan harmoni alam.”
-      <span style="margin-left: auto; opacity: 0.6; font-style: normal; font-size: 0.8rem;">— A. Zahrani</span>
+      “Fisika mengajarkan kita bahwa semua hal terhubung — dari elektron hingga galaksi.”
+      <span>— Fisica</span>
     </div>
 
-    <!-- kontak / sosial (gaya guru modern) -->
+    <!-- kontak / media sosial -->
     <div class="sosial">
       <span class="sosial-item">
-        <i class="fas fa-envelope"></i> alifa.fisika@edu.id
+        <i class="fas fa-envelope"></i> fisica@guru.edu
       </span>
       <span class="sosial-item">
-        <i class="fas fa-phone-alt"></i> +62 812 3456 7890
+        <i class="fas fa-phone-alt"></i> +62 811 2233 4455
       </span>
       <span class="sosial-item">
-        <i class="fab fa-instagram"></i> @fisika.bersama
+        <i class="fab fa-instagram"></i> @fisica.mengajar
       </span>
       <span class="sosial-item">
-        <i class="fab fa-youtube"></i> Fisika & Alifa
+        <i class="fab fa-youtube"></i> Fisica Channel
+      </span>
+      <span class="sosial-item">
+        <i class="fab fa-twitter"></i> @fisica_phys
       </span>
     </div>
 
-    <!-- sentuhan akhir: simbol partikel (hiasan) -->
-    <div class="particle-symbol">
-      <span>⚛️</span>
+    <!-- dekorasi: simbol partikel -->
+    <div class="molekul">
+      <i class="fas fa-circle" style="font-size: 0.4rem;"></i>
+      <i class="fas fa-circle" style="font-size: 0.6rem;"></i>
+      <i class="fas fa-circle" style="font-size: 0.3rem;"></i>
+      <span style="margin-left: 6px;">⚛️</span>
     </div>
 
-    <!-- micro interaksi: efek hover pada kartu -->
-    <div style="position: absolute; bottom: 12px; right: 20px; opacity: 0.08; font-size: 0.7rem; color: #aac8ff; letter-spacing: 2px; font-weight: 100;">
-      <i class="fas fa-arrow-right"></i> e = mc²
+    <!-- sentuhan akhir: e=mc² kecil -->
+    <div style="position: absolute; bottom: 14px; left: 30px; opacity: 0.04; font-size: 0.7rem; color: #aac8ff; font-weight: 300; letter-spacing: 3px; pointer-events: none;">
+      e = mc²
     </div>
   </div>
-
-  <!-- (opsional) tambahan dekorasi latar belakang berupa partikel dinamis (CSS murni) -->
 </body>
 </html>
-```
