@@ -78,7 +78,7 @@
             box-shadow: 0 50px 80px -18px rgba(0, 0, 0, 0.9);
         }
 
-        /* VIDEO STREAM - Direct stream */
+        /* VIDEO STREAM - Menggunakan iframe dengan pendekatan berbeda */
         .video-wrapper {
             position: relative;
             width: 100%;
@@ -88,7 +88,7 @@
             background: rgba(0, 0, 0, 0.8);
             box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
             transition: all 0.3s ease;
-            min-height: 300px;
+            min-height: 320px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -98,30 +98,16 @@
             box-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
         }
 
-        /* Stream video element */
-        .video-wrapper #streamVideo {
+        /* Iframe untuk stream */
+        .video-wrapper iframe {
             display: block;
             width: 100%;
-            height: auto;
-            max-height: 70vh;
+            height: 100%;
+            min-height: 320px;
             aspect-ratio: 16 / 9;
             background: #0a0f1a;
             border: none;
             outline: none;
-            object-fit: contain;
-        }
-
-        /* Stream image for MJPEG */
-        .video-wrapper #streamImage {
-            display: none;
-            width: 100%;
-            height: auto;
-            max-height: 70vh;
-            aspect-ratio: 16 / 9;
-            background: #0a0f1a;
-            border: none;
-            outline: none;
-            object-fit: contain;
         }
 
         /* Loading overlay */
@@ -172,7 +158,7 @@
             font-family: 'Courier New', monospace;
         }
 
-        /* Fallback jika stream gagal */
+        /* Pesan error/fallback */
         .video-wrapper .stream-fallback {
             display: none;
             position: absolute;
@@ -181,7 +167,7 @@
             align-items: center;
             justify-content: center;
             gap: 0.8rem;
-            background: rgba(10, 15, 30, 0.92);
+            background: rgba(10, 15, 30, 0.95);
             backdrop-filter: blur(8px);
             border-radius: 2rem;
             color: #9bb8e8;
@@ -197,7 +183,13 @@
 
         .video-wrapper .stream-fallback .fallback-title {
             font-size: 1.1rem;
-            opacity: 0.7;
+            opacity: 0.8;
+        }
+
+        .video-wrapper .stream-fallback .fallback-sub {
+            font-size: 0.85rem;
+            opacity: 0.5;
+            max-width: 400px;
         }
 
         .video-wrapper .stream-fallback .fallback-url {
@@ -210,8 +202,15 @@
             border: 1px solid rgba(255, 255, 255, 0.03);
         }
 
-        .video-wrapper .stream-fallback .btn-retry {
-            margin-top: 0.3rem;
+        .video-wrapper .stream-fallback .btn-group-fallback {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .video-wrapper .stream-fallback .btn-fallback {
             padding: 0.5rem 1.8rem;
             background: rgba(70, 150, 255, 0.1);
             border: 1px solid rgba(70, 150, 255, 0.15);
@@ -221,11 +220,32 @@
             transition: all 0.3s ease;
             font-size: 0.8rem;
             font-family: 'Inter', sans-serif;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .video-wrapper .stream-fallback .btn-retry:hover {
+        .video-wrapper .stream-fallback .btn-fallback:hover {
             background: rgba(70, 150, 255, 0.2);
             transform: scale(1.02);
+        }
+
+        /* Info tambahan tentang CORS */
+        .cors-info {
+            display: none;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 107, 107, 0.08);
+            border-top: 1px solid rgba(255, 107, 107, 0.1);
+            padding: 0.5rem 1rem;
+            color: rgba(255, 107, 107, 0.4);
+            font-size: 0.55rem;
+            text-align: center;
+            letter-spacing: 0.03em;
+            border-radius: 0 0 2rem 2rem;
         }
 
         .stream-label {
@@ -246,14 +266,8 @@
 
         .stream-label i {
             font-size: 0.6rem;
-            color: #4caf50;
+            color: #ff6b6b;
             animation: blink 1.4s infinite;
-        }
-
-        .stream-label .status-text {
-            font-size: 0.6rem;
-            opacity: 0.6;
-            font-weight: 300;
         }
 
         @keyframes blink {
@@ -264,6 +278,12 @@
             50% {
                 opacity: 0.15;
             }
+        }
+
+        .stream-label .status-text {
+            font-size: 0.6rem;
+            opacity: 0.6;
+            font-weight: 300;
         }
 
         .icon-row {
@@ -571,11 +591,14 @@
             }
             .video-wrapper {
                 border-radius: 1.2rem;
-                min-height: 200px;
+                min-height: 220px;
             }
-            .video-wrapper #streamVideo,
-            .video-wrapper #streamImage {
-                max-height: 50vh;
+            .video-wrapper iframe {
+                min-height: 220px;
+            }
+            .video-wrapper .stream-fallback .btn-group-fallback {
+                flex-direction: column;
+                align-items: center;
             }
         }
 
@@ -596,7 +619,7 @@
 <body>
     <div class="card">
 
-        <!-- VIDEO STREAM - Direct stream di halaman -->
+        <!-- VIDEO STREAM -->
         <div class="video-wrapper" id="videoWrapper">
             <!-- Loading overlay -->
             <div class="loading-overlay" id="loadingOverlay">
@@ -605,28 +628,36 @@
                 <span class="loading-url">http://10.101.209.113/</span>
             </div>
 
-            <!-- Video element untuk stream -->
-            <video id="streamVideo" autoplay muted playsinline>
-                <source src="http://10.101.209.113/" type="video/mp4" />
-                <source src="http://10.101.209.113/" type="video/ogg" />
-                <source src="http://10.101.209.113/" type="video/webm" />
-                <p>Browser tidak mendukung video tag.</p>
-            </video>
-
-            <!-- Image element untuk MJPEG stream (fallback) -->
-            <img id="streamImage" src="" alt="Live Stream" />
+            <!-- Iframe untuk stream -->
+            <iframe id="streamIframe" 
+                    src="" 
+                    frameborder="0" 
+                    allowfullscreen
+                    allow="autoplay; encrypted-media"
+                    sandbox="allow-same-origin allow-scripts allow-forms allow-modals">
+            </iframe>
 
             <!-- Fallback jika stream gagal -->
             <div class="stream-fallback" id="streamFallback">
                 <i class="fas fa-video-slash"></i>
-                <span class="fallback-title">Tidak dapat terhubung ke stream</span>
-                <span class="fallback-url">http://10.101.209.113/</span>
-                <span style="font-size:0.6rem; opacity:0.3;">
-                    <i class="fas fa-info-circle"></i> Pastikan server stream aktif
+                <span class="fallback-title">Stream tidak dapat ditampilkan</span>
+                <span class="fallback-sub">
+                    Browser memblokir akses ke stream HTTP dari halaman HTTPS karena kebijakan keamanan (CORS & Mixed Content).
                 </span>
-                <button class="btn-retry" onclick="location.reload()">
-                    <i class="fas fa-sync-alt"></i> Coba Lagi
-                </button>
+                <span class="fallback-url">http://10.101.209.113/</span>
+                <div class="btn-group-fallback">
+                    <a href="http://10.101.209.113/" target="_blank" class="btn-fallback">
+                        <i class="fas fa-external-link-alt"></i> Buka di Tab Baru
+                    </a>
+                    <button class="btn-fallback" onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i> Refresh Halaman
+                    </button>
+                </div>
+            </div>
+
+            <!-- Info CORS -->
+            <div class="cors-info" id="corsInfo">
+                <i class="fas fa-shield-alt"></i> CORS & Mixed Content — buka di tab baru untuk mengakses stream
             </div>
         </div>
 
@@ -634,7 +665,7 @@
         <div class="stream-label">
             <i class="fas fa-circle"></i> 
             LIVE STREAM · Fisika Lab
-            <span class="status-text">(langsung di halaman)</span>
+            <span class="status-text">(akses via tab baru)</span>
         </div>
 
         <!-- Ikon fisika -->
@@ -729,120 +760,100 @@
             'use strict';
 
             const STREAM_URL = 'http://10.101.209.113/';
-            const video = document.getElementById('streamVideo');
-            const image = document.getElementById('streamImage');
+            const iframe = document.getElementById('streamIframe');
             const fallback = document.getElementById('streamFallback');
             const loading = document.getElementById('loadingOverlay');
+            const corsInfo = document.getElementById('corsInfo');
             const wrapper = document.getElementById('videoWrapper');
 
-            let isLoaded = false;
-            let useImageFallback = false;
-            let retryCount = 0;
-            const maxRetries = 2;
+            let loaded = false;
+            let attempts = 0;
+            const maxAttempts = 2;
+
+            function showFallback() {
+                if (loading) loading.classList.add('hidden');
+                if (iframe) iframe.style.display = 'none';
+                if (fallback) fallback.style.display = 'flex';
+                if (corsInfo) corsInfo.style.display = 'block';
+            }
+
+            function hideFallback() {
+                if (fallback) fallback.style.display = 'none';
+                if (corsInfo) corsInfo.style.display = 'none';
+                if (iframe) iframe.style.display = 'block';
+            }
 
             function hideLoading() {
                 if (loading) loading.classList.add('hidden');
             }
 
-            function showFallback() {
-                if (loading) loading.classList.add('hidden');
-                if (video) video.style.display = 'none';
-                if (image) image.style.display = 'none';
-                if (fallback) fallback.style.display = 'flex';
+            function loadStream() {
+                attempts++;
+                console.log(`🔄 Mencoba memuat stream (percobaan ${attempts})...`);
+
+                if (loading) loading.classList.remove('hidden');
+                hideFallback();
+                if (iframe) iframe.style.display = 'block';
+
+                // Muat iframe dengan cache busting
+                if (iframe) {
+                    const url = STREAM_URL + (STREAM_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
+                    iframe.src = url;
+                }
+
+                // Timeout untuk deteksi kegagalan
+                setTimeout(() => {
+                    if (!loaded && attempts < maxAttempts) {
+                        console.log(`⏳ Percobaan ${attempts} gagal, mencoba lagi...`);
+                        loadStream();
+                    } else if (!loaded) {
+                        console.log('❌ Semua percobaan gagal');
+                        showFallback();
+                    }
+                }, 7000);
             }
 
-            function tryImageStream() {
-                console.log('Mencoba MJPEG stream...');
-                if (video) video.style.display = 'none';
-                if (image) {
-                    image.style.display = 'block';
-                    image.src = STREAM_URL + '?_=' + Date.now();
-                    
-                    image.onload = function() {
-                        console.log('✅ MJPEG stream berhasil dimuat!');
-                        isLoaded = true;
-                        hideLoading();
-                        if (fallback) fallback.style.display = 'none';
-                        // Refresh image setiap 2 detik untuk MJPEG
-                        setInterval(function() {
-                            if (image.style.display !== 'none') {
-                                image.src = STREAM_URL + '?_=' + Date.now();
-                            }
-                        }, 2000);
-                    };
-                    
-                    image.onerror = function() {
-                        console.warn('MJPEG stream gagal dimuat');
-                        if (retryCount < maxRetries) {
-                            retryCount++;
-                            setTimeout(tryImageStream, 3000);
+            // Event listener untuk iframe
+            if (iframe) {
+                iframe.addEventListener('load', function() {
+                    console.log('✅ Iframe loaded');
+                    loaded = true;
+                    hideLoading();
+                    hideFallback();
+                    attempts = 0;
+                });
+
+                iframe.addEventListener('error', function(e) {
+                    console.warn('⚠️ Iframe error:', e);
+                    if (!loaded) {
+                        if (attempts < maxAttempts) {
+                            loadStream();
                         } else {
                             showFallback();
                         }
-                    };
-                }
+                    }
+                });
             }
 
-            // Event untuk video
-            if (video) {
-                video.addEventListener('loadeddata', function() {
-                    console.log('✅ Video stream berhasil dimuat!');
-                    isLoaded = true;
-                    hideLoading();
-                    if (fallback) fallback.style.display = 'none';
-                    if (video) video.style.display = 'block';
-                    if (image) image.style.display = 'none';
-                });
+            // Mulai load
+            loadStream();
 
-                video.addEventListener('canplay', function() {
-                    if (!isLoaded) {
-                        isLoaded = true;
-                        hideLoading();
-                        if (fallback) fallback.style.display = 'none';
-                    }
-                });
-
-                video.addEventListener('error', function(e) {
-                    console.warn('Video stream error, mencoba MJPEG...');
-                    if (!isLoaded) {
-                        tryImageStream();
-                    }
-                });
-
-                // Timeout untuk video
-                setTimeout(function() {
-                    if (!isLoaded && video.readyState === 0) {
-                        console.warn('Video timeout, mencoba MJPEG...');
-                        tryImageStream();
-                    }
-                }, 5000);
-            } else {
-                tryImageStream();
-            }
-
-            // Jika semua gagal dalam 15 detik
-            setTimeout(function() {
-                if (!isLoaded) {
+            // Fallback jika semua gagal dalam 15 detik
+            setTimeout(() => {
+                if (!loaded) {
                     showFallback();
                 }
             }, 15000);
 
-            // Tombol retry
-            const retryBtn = document.querySelector('.btn-retry');
-            if (retryBtn) {
-                retryBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    location.reload();
-                });
-            }
-
+            // Log info
             console.log('📹 Stream URL:', STREAM_URL);
-            console.log('💡 Stream akan ditampilkan langsung di halaman');
+            console.log('💡 Karena CORS & Mixed Content, stream mungkin perlu dibuka di tab baru');
+            console.log('🔒 Browser memblokir HTTP dari HTTPS untuk alamat IP lokal');
 
-            // Coba muat ulang video jika gagal
-            setTimeout(function() {
-                if (!isLoaded && video && video.readyState === 0) {
-                    video.load();
+            // Tampilkan info CORS setelah beberapa detik jika masih loading
+            setTimeout(() => {
+                if (!loaded && corsInfo) {
+                    corsInfo.style.display = 'block';
                 }
             }, 3000);
 
