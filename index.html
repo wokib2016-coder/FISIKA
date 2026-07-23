@@ -3,23 +3,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fisica · Guru Fisika · Face Detection</title>
-    <!-- Google Font & Font Awesome -->
+    <title>Fisica · Face Detection</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-    <!-- MediaPipe FaceMesh -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             min-height: 100vh;
             display: flex;
@@ -28,99 +18,46 @@
             background: #0b1424;
             font-family: 'Inter', sans-serif;
             padding: 1.5rem;
-            position: relative;
-            overflow-x: hidden;
         }
-
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(ellipse at 20% 50%, rgba(20, 60, 120, 0.25) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 20%, rgba(60, 30, 120, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 80%, rgba(10, 40, 80, 0.3) 0%, transparent 50%),
-                #0b1424;
-            z-index: 0;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                radial-gradient(1.5px 1.5px at 10% 10%, rgba(255, 255, 255, 0.2), transparent),
-                radial-gradient(1.5px 1.5px at 25% 40%, rgba(255, 255, 255, 0.15), transparent),
-                radial-gradient(2px 2px at 55% 15%, rgba(255, 255, 255, 0.25), transparent),
-                radial-gradient(1.5px 1.5px at 70% 60%, rgba(255, 255, 255, 0.1), transparent),
-                radial-gradient(2px 2px at 90% 30%, rgba(255, 255, 255, 0.2), transparent),
-                radial-gradient(1.5px 1.5px at 15% 80%, rgba(255, 255, 255, 0.1), transparent),
-                radial-gradient(1.5px 1.5px at 45% 90%, rgba(255, 255, 255, 0.15), transparent),
-                radial-gradient(2px 2px at 80% 85%, rgba(255, 255, 255, 0.1), transparent);
-            background-size: 100% 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-
         .card {
             max-width: 860px;
             width: 100%;
             background: rgba(12, 22, 40, 0.55);
-            backdrop-filter: blur(16px) saturate(1.2);
-            -webkit-backdrop-filter: blur(16px) saturate(1.2);
-            border-radius: 3.5rem 3.5rem 2.5rem 2.5rem;
-            padding: 3rem 3rem 3.2rem;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            box-shadow: 0 40px 70px -20px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+            backdrop-filter: blur(16px);
+            border-radius: 3.5rem;
+            padding: 2.5rem;
+            border: 1px solid rgba(255,255,255,0.04);
+            box-shadow: 0 40px 70px -20px rgba(0,0,0,0.9);
             position: relative;
             z-index: 2;
-            transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.1), box-shadow 0.3s;
         }
-
-        .card:hover {
-            transform: translateY(-4px) scale(1.003);
-            box-shadow: 0 50px 80px -18px rgba(0, 0, 0, 0.9);
-        }
-
         .video-wrapper {
             position: relative;
             width: 100%;
             border-radius: 2rem;
             overflow: hidden;
-            margin-bottom: 1rem;
-            background: rgba(0, 0, 0, 0.8);
-            box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
-            transition: all 0.3s ease;
+            background: rgba(0,0,0,0.8);
             min-height: 350px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-
-        .video-wrapper:hover {
-            box-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
-        }
-
         .video-wrapper #videoCanvas {
             width: 100%;
             height: auto;
-            aspect-ratio: 16 / 9;
+            aspect-ratio: 16/9;
             background: #0a0f1a;
             display: block;
         }
-
         .video-wrapper #localVideo {
             display: none;
             width: 100%;
             height: auto;
-            aspect-ratio: 16 / 9;
+            aspect-ratio: 16/9;
             background: #0a0f1a;
-            border: none;
-            outline: none;
             object-fit: cover;
             transform: scaleX(-1);
         }
-
         .video-wrapper .loading-overlay {
             position: absolute;
             inset: 0;
@@ -129,55 +66,39 @@
             align-items: center;
             justify-content: center;
             gap: 0.8rem;
-            background: rgba(10, 15, 30, 0.92);
+            background: rgba(10,15,30,0.92);
             backdrop-filter: blur(8px);
             border-radius: 2rem;
             z-index: 10;
-            transition: opacity 0.6s ease;
             padding: 2rem;
+            transition: opacity 0.6s ease;
         }
-
-        .video-wrapper .loading-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
+        .video-wrapper .loading-overlay.hidden { opacity: 0; pointer-events: none; }
         .video-wrapper .loading-overlay .spinner {
             width: 50px;
             height: 50px;
-            border: 3px solid rgba(255, 255, 255, 0.05);
+            border: 3px solid rgba(255,255,255,0.05);
             border-top-color: #7fb0ff;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
+        @keyframes spin { to { transform: rotate(360deg); } }
         .video-wrapper .loading-overlay .loading-text {
-            color: rgba(255, 255, 255, 0.6);
+            color: rgba(255,255,255,0.6);
             font-size: 0.9rem;
-            letter-spacing: 0.05em;
         }
-
         .video-wrapper .loading-overlay .loading-sub {
-            color: rgba(255, 255, 255, 0.25);
+            color: rgba(255,255,255,0.25);
             font-size: 0.65rem;
         }
-
         .video-wrapper .loading-overlay .progress-bar {
             width: 80%;
             max-width: 300px;
             height: 4px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.05);
             border-radius: 10px;
             overflow: hidden;
-            margin: 0.2rem 0;
         }
-
         .video-wrapper .loading-overlay .progress-bar .progress-fill {
             height: 100%;
             width: 0%;
@@ -185,13 +106,11 @@
             border-radius: 10px;
             transition: width 0.3s ease;
         }
-
         .video-wrapper .loading-overlay .progress-text {
-            color: rgba(255, 255, 255, 0.2);
+            color: rgba(255,255,255,0.2);
             font-size: 0.6rem;
             font-family: 'Courier New', monospace;
         }
-
         .video-wrapper .no-camera-overlay {
             position: absolute;
             inset: 0;
@@ -200,7 +119,7 @@
             align-items: center;
             justify-content: center;
             gap: 0.8rem;
-            background: rgba(10, 15, 30, 0.92);
+            background: rgba(10,15,30,0.92);
             backdrop-filter: blur(8px);
             border-radius: 2rem;
             color: #9bb8e8;
@@ -208,29 +127,14 @@
             text-align: center;
             z-index: 5;
         }
-
-        .video-wrapper .no-camera-overlay i {
-            font-size: 3.5rem;
-            opacity: 0.25;
-            color: #ff6b6b;
-        }
-
-        .video-wrapper .no-camera-overlay .title {
-            font-size: 1.1rem;
-            opacity: 0.8;
-        }
-
-        .video-wrapper .no-camera-overlay .sub {
-            font-size: 0.8rem;
-            opacity: 0.5;
-            max-width: 400px;
-        }
-
+        .video-wrapper .no-camera-overlay i { font-size: 3.5rem; opacity: 0.25; color: #ff6b6b; }
+        .video-wrapper .no-camera-overlay .title { font-size: 1.1rem; opacity: 0.8; }
+        .video-wrapper .no-camera-overlay .sub { font-size: 0.8rem; opacity: 0.5; max-width: 400px; }
         .video-wrapper .no-camera-overlay .btn-retry-cam {
             margin-top: 0.3rem;
             padding: 0.5rem 1.8rem;
-            background: rgba(70, 150, 255, 0.1);
-            border: 1px solid rgba(70, 150, 255, 0.15);
+            background: rgba(70,150,255,0.1);
+            border: 1px solid rgba(70,150,255,0.15);
             border-radius: 30px;
             color: #8bb4f0;
             cursor: pointer;
@@ -238,12 +142,10 @@
             font-size: 0.8rem;
             font-family: 'Inter', sans-serif;
         }
-
         .video-wrapper .no-camera-overlay .btn-retry-cam:hover {
-            background: rgba(70, 150, 255, 0.2);
+            background: rgba(70,150,255,0.2);
             transform: scale(1.02);
         }
-
         .detection-info {
             display: flex;
             flex-wrap: wrap;
@@ -251,50 +153,39 @@
             justify-content: center;
             padding: 0.4rem 0;
             font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.3);
+            color: rgba(255,255,255,0.3);
         }
-
-        .detection-info .info-item {
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
+        .detection-info .info-item { display: flex; align-items: center; gap: 0.3rem; }
+        .detection-info .info-item i { font-size: 0.6rem; color: #7fb0ff; }
+        .cam-status {
+            text-align: center;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.25);
+            padding: 0.2rem 0;
         }
-
-        .detection-info .info-item i {
-            font-size: 0.6rem;
-            color: #7fb0ff;
-        }
-
-        .detection-info .info-item .dot-active {
+        .cam-status .dot-status {
             display: inline-block;
-            width: 5px;
-            height: 5px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
-            background: #4caf50;
-            animation: blink 1.4s infinite;
+            margin-right: 0.4rem;
         }
-
-        .detection-info .info-item .dot-inactive {
-            display: inline-block;
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: #ff6b6b;
-        }
-
+        .cam-status .dot-status.off { background: #ff6b6b; }
+        .cam-status .dot-status.on { background: #4caf50; animation: blink 1.4s infinite; }
+        .cam-status .dot-status.loading { background: #ffa726; animation: blink 0.8s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.15} }
         .camera-controls {
             display: flex;
             flex-wrap: wrap;
             gap: 0.6rem;
             justify-content: center;
             padding: 0.6rem 0 0.3rem 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            border-top: 1px solid rgba(255,255,255,0.03);
         }
-
         .camera-controls .btn-cam {
             padding: 0.45rem 1.2rem;
-            background: rgba(70, 150, 255, 0.06);
-            border: 1px solid rgba(70, 150, 255, 0.08);
+            background: rgba(70,150,255,0.06);
+            border: 1px solid rgba(70,150,255,0.08);
             border-radius: 30px;
             color: #8bb4f0;
             cursor: pointer;
@@ -305,83 +196,16 @@
             align-items: center;
             gap: 0.4rem;
         }
-
-        .camera-controls .btn-cam:hover {
-            background: rgba(70, 150, 255, 0.12);
-            transform: scale(1.02);
-        }
-
-        .camera-controls .btn-cam.active {
-            background: rgba(76, 175, 80, 0.12);
-            border-color: rgba(76, 175, 80, 0.2);
-            color: #81c784;
-        }
-
-        .camera-controls .btn-cam i {
-            font-size: 0.75rem;
-        }
-
-        .camera-controls .btn-cam .badge-cam {
-            font-size: 0.5rem;
-            background: rgba(255, 255, 255, 0.04);
-            padding: 0.05rem 0.4rem;
-            border-radius: 20px;
-            opacity: 0.4;
-        }
-
-        .camera-controls .btn-cam.btn-danger {
-            border-color: rgba(255, 107, 107, 0.1);
-            color: #ff6b6b;
-        }
-
-        .camera-controls .btn-cam.btn-danger:hover {
-            background: rgba(255, 107, 107, 0.1);
-        }
-
-        .cam-status {
-            text-align: center;
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.25);
-            padding: 0.2rem 0;
-            letter-spacing: 0.03em;
-        }
-
-        .cam-status .dot-status {
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            margin-right: 0.4rem;
-        }
-
-        .cam-status .dot-status.off {
-            background: #ff6b6b;
-        }
-        .cam-status .dot-status.on {
-            background: #4caf50;
-            animation: blink 1.4s infinite;
-        }
-        .cam-status .dot-status.loading {
-            background: #ffa726;
-            animation: blink 0.8s infinite;
-        }
-
-        @keyframes blink {
-            0%,
-            100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.15;
-            }
-        }
-
+        .camera-controls .btn-cam:hover { background: rgba(70,150,255,0.12); transform: scale(1.02); }
+        .camera-controls .btn-cam.active { background: rgba(76,175,80,0.12); border-color: rgba(76,175,80,0.2); color: #81c784; }
+        .camera-controls .btn-cam.btn-danger { border-color: rgba(255,107,107,0.1); color: #ff6b6b; }
+        .camera-controls .btn-cam.btn-danger:hover { background: rgba(255,107,107,0.1); }
         .stream-label {
             display: inline-flex;
             align-items: center;
             gap: 0.6rem;
-            background: rgba(70, 150, 255, 0.06);
-            border: 1px solid rgba(70, 150, 255, 0.08);
+            background: rgba(70,150,255,0.06);
+            border: 1px solid rgba(70,150,255,0.08);
             padding: 0.3rem 1.2rem;
             border-radius: 40px;
             font-size: 0.65rem;
@@ -391,47 +215,22 @@
             margin-bottom: 1.2rem;
             backdrop-filter: blur(4px);
         }
-
-        .stream-label i {
-            font-size: 0.6rem;
-            color: #4caf50;
-            animation: blink 1.4s infinite;
-        }
-
-        .stream-label .status-text {
-            font-size: 0.6rem;
-            opacity: 0.6;
-            font-weight: 300;
-        }
-
+        .stream-label i { font-size: 0.6rem; color: #4caf50; animation: blink 1.4s infinite; }
         .icon-row {
             display: flex;
             justify-content: center;
             gap: 1.6rem;
             margin-bottom: 1.8rem;
-            color: rgba(255, 255, 255, 0.08);
+            color: rgba(255,255,255,0.08);
             font-size: 1.7rem;
-            letter-spacing: 0.3rem;
             flex-wrap: wrap;
         }
-
-        .icon-row i {
-            color: #8bbaff;
-            opacity: 0.35;
-            filter: drop-shadow(0 0 8px rgba(70, 140, 255, 0.15));
-            transition: all 0.3s ease;
-        }
-
-        .icon-row i:hover {
-            opacity: 0.8;
-            transform: scale(1.15) rotate(6deg);
-            color: #b6d4ff;
-        }
-
+        .icon-row i { color: #8bbaff; opacity: 0.35; transition: all 0.3s ease; }
+        .icon-row i:hover { opacity: 0.8; transform: scale(1.15) rotate(6deg); color: #b6d4ff; }
         .badge {
             display: inline-block;
-            background: rgba(70, 150, 255, 0.07);
-            border: 1px solid rgba(70, 150, 255, 0.12);
+            background: rgba(70,150,255,0.07);
+            border: 1px solid rgba(70,150,255,0.12);
             padding: 0.45rem 1.6rem;
             border-radius: 60px;
             font-size: 0.7rem;
@@ -440,16 +239,8 @@
             color: #b0ceff;
             font-weight: 500;
             margin-bottom: 1.2rem;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 0 20px rgba(50, 120, 255, 0.05);
         }
-
-        .badge i {
-            margin-right: 0.5rem;
-            font-size: 0.7rem;
-            color: #7fb0ff;
-        }
-
+        .badge i { margin-right: 0.5rem; color: #7fb0ff; }
         .nama {
             font-family: 'Playfair Display', serif;
             font-size: 4.2rem;
@@ -460,10 +251,9 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 0 0 40px rgba(80, 160, 255, 0.2);
+            text-shadow: 0 0 40px rgba(80,160,255,0.2);
             margin-bottom: 0.2rem;
         }
-
         .subhead {
             display: flex;
             flex-wrap: wrap;
@@ -471,59 +261,32 @@
             gap: 0.8rem 1.5rem;
             margin-bottom: 2rem;
             padding-bottom: 1.2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.03);
         }
-
         .pekerjaan {
             font-size: 1.2rem;
             font-weight: 400;
             color: #d0e4ff;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255,255,255,0.02);
             padding: 0.2rem 1.2rem 0.2rem 1rem;
             border-radius: 60px;
             border-left: 2.5px solid #5f9eff;
-            letter-spacing: 0.02em;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
         }
-
-        .pekerjaan i {
-            color: #7fb0ff;
-            font-size: 1rem;
-        }
-
-        .tag-fisika {
-            display: flex;
-            gap: 0.5rem;
-            color: #7a9ed6;
-            font-size: 0.75rem;
-            font-weight: 400;
-            letter-spacing: 0.04em;
-        }
-
-        .tag-fisika span {
-            background: rgba(255, 255, 255, 0.02);
-            padding: 0.2rem 0.9rem;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
+        .pekerjaan i { color: #7fb0ff; font-size: 1rem; }
+        .tag-fisika { display: flex; gap: 0.5rem; color: #7a9ed6; font-size: 0.75rem; }
+        .tag-fisika span { background: rgba(255,255,255,0.02); padding: 0.2rem 0.9rem; border-radius: 30px; border: 1px solid rgba(255,255,255,0.03); }
         .deskripsi {
             margin: 2rem 0 2.2rem;
             padding-left: 1.6rem;
-            border-left: 3px solid rgba(100, 170, 255, 0.15);
-            color: rgba(215, 235, 255, 0.85);
+            border-left: 3px solid rgba(100,170,255,0.15);
+            color: rgba(215,235,255,0.85);
             font-weight: 300;
             line-height: 1.8;
             font-size: 1.1rem;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
-
-        .deskripsi p {
-            margin-bottom: 0.6rem;
-        }
-
         .deskripsi strong {
             color: #dcebff;
             font-weight: 500;
@@ -533,23 +296,12 @@
             color: transparent;
             font-weight: 600;
         }
-
-        .highlight {
-            display: inline-block;
-            background: rgba(60, 140, 255, 0.04);
-            padding: 0 0.3rem;
-            border-radius: 4px;
-            color: #c8ddff;
-            font-weight: 400;
-        }
-
         .quote-block {
-            background: rgba(0, 20, 50, 0.25);
+            background: rgba(0,20,50,0.25);
             border-radius: 50px;
             padding: 0.9rem 1.8rem;
             margin: 1.5rem 0 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.02);
             display: flex;
             align-items: center;
             gap: 0.8rem;
@@ -557,22 +309,8 @@
             color: #b3cef5;
             font-size: 1rem;
         }
-
-        .quote-block i {
-            color: #5f9eff;
-            opacity: 0.5;
-            font-size: 1.2rem;
-        }
-
-        .quote-block span {
-            font-style: normal;
-            font-weight: 300;
-            margin-left: auto;
-            opacity: 0.6;
-            font-size: 0.8rem;
-            letter-spacing: 0.02em;
-        }
-
+        .quote-block i { color: #5f9eff; opacity: 0.5; font-size: 1.2rem; }
+        .quote-block span { font-style: normal; font-weight: 300; margin-left: auto; opacity: 0.6; font-size: 0.8rem; }
         .sosial {
             display: flex;
             flex-wrap: wrap;
@@ -580,9 +318,8 @@
             gap: 1.2rem 2rem;
             margin-top: 2rem;
             padding-top: 1.8rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.02);
+            border-top: 1px solid rgba(255,255,255,0.02);
         }
-
         .sosial-item {
             display: flex;
             align-items: center;
@@ -595,25 +332,9 @@
             border-bottom: 1px solid transparent;
             padding-bottom: 0.1rem;
         }
-
-        .sosial-item i {
-            width: 1.8rem;
-            text-align: center;
-            font-size: 1.1rem;
-            color: #7faeff;
-            transition: 0.25s;
-        }
-
-        .sosial-item:hover {
-            color: #e2efff;
-            border-bottom-color: rgba(100, 170, 255, 0.2);
-        }
-
-        .sosial-item:hover i {
-            color: #b7d4ff;
-            transform: translateX(3px);
-        }
-
+        .sosial-item i { width: 1.8rem; text-align: center; font-size: 1.1rem; color: #7faeff; transition: 0.25s; }
+        .sosial-item:hover { color: #e2efff; border-bottom-color: rgba(100,170,255,0.2); }
+        .sosial-item:hover i { color: #b7d4ff; transform: translateX(3px); }
         .molekul {
             position: absolute;
             bottom: 1.5rem;
@@ -622,727 +343,384 @@
             opacity: 0.04;
             color: #b0ceff;
             pointer-events: none;
-            font-family: 'Times New Roman', serif;
-            letter-spacing: 2px;
         }
-
-        .molekul i {
-            margin: 0 0.1rem;
+        @media (max-width:600px) {
+            .card { padding: 1.5rem; }
+            .nama { font-size: 3rem; }
+            .video-wrapper { min-height: 220px; }
         }
-
-        .card {
-            animation: muncul 0.9s cubic-bezier(0.15, 0.9, 0.2, 1) forwards;
-        }
-
-        @keyframes muncul {
-            0% {
-                opacity: 0;
-                transform: translateY(50px) scale(0.97);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .nama,
-        .badge,
-        .deskripsi,
-        .quote-block,
-        .sosial,
-        .video-wrapper,
-        .stream-label,
-        .camera-controls,
-        .cam-status,
-        .detection-info {
-            animation: fadeNaik 0.8s ease forwards;
-        }
-
-        .video-wrapper {
-            animation-delay: 0.05s;
-        }
-        .cam-status {
-            animation-delay: 0.08s;
-        }
-        .stream-label {
-            animation-delay: 0.08s;
-        }
-        .camera-controls {
-            animation-delay: 0.1s;
-        }
-        .detection-info {
-            animation-delay: 0.1s;
-        }
-        .deskripsi {
-            animation-delay: 0.12s;
-        }
-        .quote-block {
-            animation-delay: 0.2s;
-        }
-        .sosial {
-            animation-delay: 0.3s;
-        }
-
-        @keyframes fadeNaik {
-            0% {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 600px) {
-            .card {
-                padding: 2rem 1.5rem 2.2rem;
-                border-radius: 2.5rem;
-            }
-            .nama {
-                font-size: 3rem;
-            }
-            .subhead {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.3rem;
-            }
-            .pekerjaan {
-                font-size: 1rem;
-                padding: 0.2rem 1rem;
-            }
-            .deskripsi {
-                font-size: 1rem;
-                padding-left: 1rem;
-            }
-            .quote-block {
-                flex-wrap: wrap;
-                padding: 0.8rem 1.2rem;
-            }
-            .video-wrapper {
-                border-radius: 1.2rem;
-                min-height: 220px;
-            }
-            .camera-controls .btn-cam {
-                font-size: 0.6rem;
-                padding: 0.35rem 0.8rem;
-            }
-            .video-wrapper .loading-overlay .progress-bar {
-                width: 90%;
-            }
-        }
-
-        @media (max-width: 430px) {
-            .nama {
-                font-size: 2.6rem;
-            }
-            .icon-row {
-                gap: 1rem;
-                font-size: 1.3rem;
-            }
-            .sosial {
-                gap: 0.8rem 1.2rem;
-            }
+        @media (max-width:430px) {
+            .nama { font-size: 2.6rem; }
         }
     </style>
 </head>
 <body>
     <div class="card">
-
-        <!-- VIDEO STREAM -->
         <div class="video-wrapper" id="videoWrapper">
-            <!-- Loading overlay -->
             <div class="loading-overlay" id="loadingOverlay">
                 <div class="spinner"></div>
-                <span class="loading-text" id="loadingText">Memuat FaceMesh...</span>
+                <span class="loading-text" id="loadingText">Memulai FaceMesh...</span>
                 <span class="loading-sub" id="loadingSub">MediaPipe Face Detection</span>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
                 <span class="progress-text" id="progressText">0%</span>
             </div>
-
-            <!-- No camera overlay -->
             <div class="no-camera-overlay" id="noCameraOverlay">
                 <i class="fas fa-camera-slash"></i>
                 <span class="title">Kamera tidak terdeteksi</span>
-                <span class="sub">Pastikan kamera laptop terhubung dan izinkan akses kamera di browser</span>
-                <button class="btn-retry-cam" id="btnRetryCam">
-                    <i class="fas fa-sync-alt"></i> Coba Lagi
-                </button>
+                <span class="sub">Pastikan kamera terhubung dan izinkan akses kamera</span>
+                <button class="btn-retry-cam" id="btnRetryCam"><i class="fas fa-sync-alt"></i> Coba Lagi</button>
             </div>
-
-            <!-- Video untuk WebRTC (kamera lokal) -->
             <video id="localVideo" autoplay muted playsinline></video>
-
-            <!-- Canvas untuk FaceMesh overlay -->
             <canvas id="videoCanvas"></canvas>
         </div>
 
-        <!-- Detection Info -->
         <div class="detection-info">
-            <span class="info-item">
-                <i class="fas fa-user"></i>
-                <span id="faceCount">Wajah: 0</span>
-            </span>
-            <span class="info-item">
-                <i class="fas fa-circle" id="statusDotInfo" style="color:#ff6b6b;"></i>
-                <span id="statusTextInfo">Deteksi: Off</span>
-            </span>
-            <span class="info-item">
-                <i class="fas fa-robot"></i>
-                <span>FaceMesh 468 titik</span>
-            </span>
-            <span class="info-item">
-                <i class="fas fa-clock" id="fpsDisplay"></i>
-                <span>FPS: 0</span>
-            </span>
+            <span class="info-item"><i class="fas fa-user"></i> <span id="faceCount">Wajah: 0</span></span>
+            <span class="info-item"><i class="fas fa-circle" id="statusDotInfo" style="color:#ff6b6b;"></i> <span id="statusTextInfo">Deteksi: Off</span></span>
+            <span class="info-item"><i class="fas fa-robot"></i> FaceMesh 468 titik</span>
         </div>
 
-        <!-- Status kamera -->
-        <div class="cam-status" id="camStatus">
-            <span class="dot-status off" id="statusDot"></span>
-            <span id="statusText">Kamera belum aktif</span>
-        </div>
+        <div class="cam-status"><span class="dot-status off" id="statusDot"></span><span id="statusText">Kamera belum aktif</span></div>
 
-        <!-- Kontrol kamera -->
         <div class="camera-controls">
-            <button class="btn-cam active" id="btnLocalCam">
-                <i class="fas fa-laptop"></i> Kamera Laptop
-                <span class="badge-cam">WebRTC</span>
-            </button>
-            <button class="btn-cam" id="btnIPCam">
-                <i class="fas fa-network-wired"></i> IP Camera
-                <span class="badge-cam">10.101.209.113</span>
-            </button>
-            <button class="btn-cam btn-danger" id="btnStopCam">
-                <i class="fas fa-stop-circle"></i> Matikan
-            </button>
+            <button class="btn-cam active" id="btnLocalCam"><i class="fas fa-laptop"></i> Kamera Laptop</button>
+            <button class="btn-cam btn-danger" id="btnStopCam"><i class="fas fa-stop-circle"></i> Matikan</button>
         </div>
 
-        <!-- Label stream -->
-        <div class="stream-label">
-            <i class="fas fa-circle"></i> 
-            LIVE STREAM · Face Detection
-            <span class="status-text" id="streamModeText">(kamera laptop)</span>
-        </div>
+        <div class="stream-label"><i class="fas fa-circle"></i> LIVE · Face Detection <span class="status-text" id="streamModeText">(kamera laptop)</span></div>
 
-        <!-- Ikon fisika -->
         <div class="icon-row">
-            <i class="fas fa-atom"></i>
-            <i class="fas fa-microscope"></i>
-            <i class="fas fa-satellite"></i>
-            <i class="fas fa-bolt"></i>
-            <i class="fas fa-chart-pie"></i>
+            <i class="fas fa-atom"></i><i class="fas fa-microscope"></i><i class="fas fa-satellite"></i><i class="fas fa-bolt"></i><i class="fas fa-chart-pie"></i>
         </div>
 
-        <!-- Badge -->
-        <div class="badge">
-            <i class="fas fa-graduation-cap"></i> Fisika · Membumi & Menginspirasi
-        </div>
-
-        <!-- NAMA -->
+        <div class="badge"><i class="fas fa-graduation-cap"></i> Fisika · Membumi & Menginspirasi</div>
         <h1 class="nama">Fisica</h1>
-
-        <!-- Pekerjaan -->
         <div class="subhead">
-            <span class="pekerjaan">
-                <i class="fas fa-chalkboard-teacher"></i> Guru Fisika
-            </span>
+            <span class="pekerjaan"><i class="fas fa-chalkboard-teacher"></i> Guru Fisika</span>
             <div class="tag-fisika">
-                <span><i class="fas fa-circle" style="font-size: 0.3rem; vertical-align: middle; color: #5f9eff;"></i> Mekanika</span>
-                <span><i class="fas fa-circle" style="font-size: 0.3rem; vertical-align: middle; color: #5f9eff;"></i> Termodinamika</span>
-                <span><i class="fas fa-circle" style="font-size: 0.3rem; vertical-align: middle; color: #5f9eff;"></i> Gelombang</span>
+                <span>Mekanika</span><span>Termodinamika</span><span>Gelombang</span>
             </div>
         </div>
-
-        <!-- Deskripsi -->
         <div class="deskripsi">
-            <p>
-                <i class="fas fa-quote-left" style="opacity: 0.2; margin-right: 6px; color: #7fb0ff;"></i>
-                Saya <strong>Fisica</strong> — seorang guru yang percaya bahwa fisika adalah 
-                <span class="highlight">puisi alam semesta</span>. 
-                Dari gerak bintang hingga getaran senar, 
-                saya mengajar bukan sekadar rumus, melainkan <strong>cara berpikir</strong> dan 
-                <strong>kagum pada realitas</strong>.
-            </p>
-            <p style="margin-top: 0.4rem;">
-                Setiap hari, saya berbagi cerita tentang <span class="highlight">energi</span>, 
-                <span class="highlight">materi</span>, dan <span class="highlight">ruang-waktu</span>. 
-                Bagi saya, ruang kelas adalah laboratorium imajinasi, 
-                dan setiap murid adalah <strong>penjelajah</strong> yang sedang menemukan 
-                keajaiban di balik fenomena.
-            </p>
+            <p><i class="fas fa-quote-left" style="opacity:0.2;margin-right:6px;color:#7fb0ff;"></i>Saya <strong>Fisica</strong> — seorang guru yang percaya bahwa fisika adalah <span class="highlight">puisi alam semesta</span>.</p>
+            <p style="margin-top:0.4rem;">Setiap hari, saya berbagi cerita tentang <span class="highlight">energi</span>, <span class="highlight">materi</span>, dan <span class="highlight">ruang-waktu</span>.</p>
         </div>
-
-        <!-- Quote -->
-        <div class="quote-block">
-            <i class="fas fa-quote-right"></i>
-            “Fisika mengajarkan kita bahwa semua hal terhubung — dari elektron hingga galaksi.”
-            <span>— Fisica</span>
-        </div>
-
-        <!-- Sosial -->
+        <div class="quote-block"><i class="fas fa-quote-right"></i> “Fisika mengajarkan kita bahwa semua hal terhubung — dari elektron hingga galaksi.” <span>— Fisica</span></div>
         <div class="sosial">
-            <span class="sosial-item">
-                <i class="fas fa-envelope"></i> fisica@guru.edu
-            </span>
-            <span class="sosial-item">
-                <i class="fas fa-phone-alt"></i> +62 811 2233 4455
-            </span>
-            <span class="sosial-item">
-                <i class="fab fa-instagram"></i> @fisica.mengajar
-            </span>
-            <span class="sosial-item">
-                <i class="fab fa-youtube"></i> Fisica Channel
-            </span>
-            <span class="sosial-item">
-                <i class="fab fa-twitter"></i> @fisica_phys
-            </span>
+            <span class="sosial-item"><i class="fas fa-envelope"></i> fisica@guru.edu</span>
+            <span class="sosial-item"><i class="fas fa-phone-alt"></i> +62 811 2233 4455</span>
+            <span class="sosial-item"><i class="fab fa-instagram"></i> @fisica.mengajar</span>
+            <span class="sosial-item"><i class="fab fa-youtube"></i> Fisica Channel</span>
         </div>
-
-        <!-- Dekorasi -->
-        <div class="molekul">
-            <i class="fas fa-circle" style="font-size: 0.4rem;"></i>
-            <i class="fas fa-circle" style="font-size: 0.6rem;"></i>
-            <i class="fas fa-circle" style="font-size: 0.3rem;"></i>
-            <span style="margin-left: 6px;">⚛️</span>
-        </div>
-
-        <div style="position: absolute; bottom: 14px; left: 30px; opacity: 0.04; font-size: 0.7rem; color: #aac8ff; font-weight: 300; letter-spacing: 3px; pointer-events: none;">
-            e = mc²
-        </div>
+        <div class="molekul"><i class="fas fa-circle" style="font-size:0.4rem;"></i><i class="fas fa-circle" style="font-size:0.6rem;"></i><i class="fas fa-circle" style="font-size:0.3rem;"></i><span style="margin-left:6px;">⚛️</span></div>
+        <div style="position:absolute;bottom:14px;left:30px;opacity:0.04;font-size:0.7rem;color:#aac8ff;font-weight:300;letter-spacing:3px;pointer-events:none;">e = mc²</div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
     <script>
-        (function() {
-            'use strict';
+    (function() {
+        'use strict';
 
-            // Elements
-            const video = document.getElementById('localVideo');
-            const canvas = document.getElementById('videoCanvas');
-            const ctx = canvas.getContext('2d');
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            const loadingText = document.getElementById('loadingText');
-            const loadingSub = document.getElementById('loadingSub');
-            const progressFill = document.getElementById('progressFill');
-            const progressText = document.getElementById('progressText');
-            const noCameraOverlay = document.getElementById('noCameraOverlay');
-            const statusDot = document.getElementById('statusDot');
-            const statusText = document.getElementById('statusText');
-            const streamModeText = document.getElementById('streamModeText');
-            const faceCountEl = document.getElementById('faceCount');
-            const statusDotInfo = document.getElementById('statusDotInfo');
-            const statusTextInfo = document.getElementById('statusTextInfo');
-            const fpsDisplay = document.getElementById('fpsDisplay');
+        const video = document.getElementById('localVideo');
+        const canvas = document.getElementById('videoCanvas');
+        const ctx = canvas.getContext('2d');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        const loadingSub = document.getElementById('loadingSub');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const noCameraOverlay = document.getElementById('noCameraOverlay');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const streamModeText = document.getElementById('streamModeText');
+        const faceCountEl = document.getElementById('faceCount');
+        const statusDotInfo = document.getElementById('statusDotInfo');
+        const statusTextInfo = document.getElementById('statusTextInfo');
 
-            const btnLocal = document.getElementById('btnLocalCam');
-            const btnIP = document.getElementById('btnIPCam');
-            const btnStop = document.getElementById('btnStopCam');
-            const btnRetry = document.getElementById('btnRetryCam');
+        const btnLocal = document.getElementById('btnLocalCam');
+        const btnStop = document.getElementById('btnStopCam');
+        const btnRetry = document.getElementById('btnRetryCam');
 
-            let localStream = null;
-            let currentMode = 'local';
-            let isCameraOn = false;
-            let isStarting = false;
-            let faceMesh = null;
-            let isFaceMeshReady = false;
-            let detectionActive = false;
-            let frameCount = 0;
-            let lastFpsUpdate = Date.now();
-            let currentFps = 0;
+        let localStream = null;
+        let isCameraOn = false;
+        let isStarting = false;
+        let faceMesh = null;
+        let isFaceMeshReady = false;
+        let detectionRunning = false;
 
-            // ==================== PROGRESS ====================
-            function updateProgress(percent, text, sub) {
-                const p = Math.min(100, Math.max(0, percent));
-                progressFill.style.width = p + '%';
-                progressText.textContent = Math.round(p) + '%';
-                if (text) loadingText.textContent = text;
-                if (sub) loadingSub.textContent = sub;
+        function updateProgress(percent, text, sub) {
+            const p = Math.min(100, Math.max(0, percent));
+            progressFill.style.width = p + '%';
+            progressText.textContent = Math.round(p) + '%';
+            if (text) loadingText.textContent = text;
+            if (sub) loadingSub.textContent = sub;
+        }
+
+        function updateStatus(on, text, isLoading) {
+            if (isLoading) {
+                statusDot.className = 'dot-status loading';
+                statusText.textContent = text || 'Memuat...';
+            } else if (on) {
+                statusDot.className = 'dot-status on';
+                statusText.textContent = text || 'Kamera aktif';
+            } else {
+                statusDot.className = 'dot-status off';
+                statusText.textContent = text || 'Kamera tidak aktif';
             }
+            isCameraOn = on;
+        }
 
-            // ==================== FACE MESH ====================
-            function initFaceMesh() {
-                updateProgress(10, 'Memuat FaceMesh...', 'Mengunduh model AI (≈10MB)');
-                
-                // Simulasi progress loading
-                let progress = 10;
-                const interval = setInterval(() => {
-                    progress += Math.random() * 8 + 2;
-                    if (progress > 95) {
-                        progress = 95;
-                        clearInterval(interval);
-                    }
-                    updateProgress(progress, 'Memuat FaceMesh...', 'Mengunduh model AI (≈10MB)');
-                }, 500);
-
-                faceMesh = new FaceMesh({
-                    locateFile: (file) => {
-                        return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-                    }
-                });
-
-                faceMesh.setOptions({
-                    maxNumFaces: 4,
-                    refineLandmarks: true,
-                    minDetectionConfidence: 0.5,
-                    minTrackingConfidence: 0.5
-                });
-
-                faceMesh.onResults((results) => {
-                    // Hentikan simulasi progress jika belum selesai
+        // ==================== FACE MESH ====================
+        function initFaceMesh() {
+            updateProgress(5, 'Memuat FaceMesh...', 'Mengunduh model AI (≈10MB)');
+            
+            let progress = 5;
+            const interval = setInterval(() => {
+                progress += Math.random() * 6 + 2;
+                if (progress > 90) {
+                    progress = 90;
                     clearInterval(interval);
+                }
+                updateProgress(progress, 'Memuat FaceMesh...', 'Mengunduh model AI (≈10MB)');
+            }, 600);
+
+            faceMesh = new FaceMesh({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+            });
+
+            faceMesh.setOptions({
+                maxNumFaces: 4,
+                refineLandmarks: true,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5
+            });
+
+            faceMesh.onResults((results) => {
+                clearInterval(interval);
+                if (!isFaceMeshReady) {
+                    isFaceMeshReady = true;
                     updateProgress(100, 'FaceMesh Siap!', 'Model berhasil dimuat');
                     setTimeout(() => {
-                        if (loadingOverlay) loadingOverlay.classList.add('hidden');
-                    }, 500);
-                    
-                    isFaceMeshReady = true;
-                    onFaceMeshResults(results);
-                });
-
-                // Mulai facemesh
-                try {
-                    faceMesh.initialize().then(() => {
-                        console.log('✅ FaceMesh initialized');
-                    }).catch((err) => {
-                        console.error('❌ FaceMesh init error:', err);
-                        updateProgress(0, 'Gagal memuat FaceMesh', 'Error: ' + err.message);
-                    });
-                } catch (err) {
-                    console.error('❌ FaceMesh error:', err);
-                    updateProgress(0, 'Gagal memuat FaceMesh', 'Error: ' + err.message);
-                }
-            }
-
-            // ==================== FACE MESH RESULTS ====================
-            function onFaceMeshResults(results) {
-                // Draw canvas
-                canvas.width = video.videoWidth || 640;
-                canvas.height = video.videoHeight || 480;
-                
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                // Gambar video
-                if (video.videoWidth > 0) {
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                }
-                
-                // Gambar landmark wajah
-                if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-                    detectionActive = true;
-                    const faceCount = results.multiFaceLandmarks.length;
-                    faceCountEl.textContent = `Wajah: ${faceCount}`;
-                    statusDotInfo.style.color = '#4caf50';
-                    statusTextInfo.textContent = 'Deteksi: Aktif';
-                    
-                    // Draw semua wajah
-                    for (const landmarks of results.multiFaceLandmarks) {
-                        drawFaceMesh(landmarks);
-                    }
-                } else {
-                    detectionActive = false;
-                    faceCountEl.textContent = 'Wajah: 0';
-                    statusDotInfo.style.color = '#ff6b6b';
-                    statusTextInfo.textContent = 'Deteksi: Off';
-                }
-                
-                // Update FPS
-                frameCount++;
-                const now = Date.now();
-                if (now - lastFpsUpdate > 1000) {
-                    currentFps = Math.round(frameCount * 1000 / (now - lastFpsUpdate));
-                    frameCount = 0;
-                    lastFpsUpdate = now;
-                    if (fpsDisplay) {
-                        fpsDisplay.textContent = `⚡ ${currentFps}`;
-                    }
-                }
-            }
-
-            // ==================== DRAW FACE MESH ====================
-            function drawFaceMesh(landmarks) {
-                const width = canvas.width;
-                const height = canvas.height;
-                
-                // Gambar titik-titik
-                ctx.fillStyle = 'rgba(0, 255, 100, 0.6)';
-                ctx.strokeStyle = 'rgba(0, 200, 255, 0.15)';
-                ctx.lineWidth = 0.5;
-                
-                // Titik-titik wajah
-                for (const landmark of landmarks) {
-                    const x = landmark.x * width;
-                    const y = landmark.y * height;
-                    
-                    ctx.beginPath();
-                    ctx.arc(x, y, 2, 0, 2 * Math.PI);
-                    ctx.fill();
-                }
-                
-                // Gambar koneksi (wajah)
-                const connections = [
-                    // Wajah bagian luar
-                    [10, 338], [338, 297], [297, 332], [332, 284], [284, 251], [251, 389],
-                    [389, 356], [356, 454], [454, 323], [323, 361], [361, 288], [288, 397],
-                    [397, 365], [365, 379], [379, 378], [378, 400], [400, 377], [377, 152],
-                    [152, 148], [148, 176], [176, 149], [149, 150], [150, 136], [136, 172],
-                    [172, 58], [58, 132], [132, 93], [93, 234], [234, 127], [127, 162],
-                    [162, 21], [21, 54], [54, 103], [103, 67], [67, 109], [109, 10],
-                    // Mata kiri
-                    [33, 7], [7, 163], [163, 144], [144, 145], [145, 153], [153, 154],
-                    [154, 155], [155, 133], [33, 133],
-                    // Mata kanan
-                    [362, 382], [382, 381], [381, 380], [380, 374], [374, 373],
-                    [373, 390], [390, 249], [249, 263], [263, 466], [466, 388],
-                    [388, 387], [387, 386], [386, 385], [385, 384], [384, 398],
-                    [398, 362],
-                    // Bibir luar
-                    [61, 146], [146, 91], [91, 181], [181, 84], [84, 17],
-                    [17, 314], [314, 405], [405, 321], [321, 375], [375, 291],
-                    [61, 291],
-                    // Bibir dalam
-                    [78, 95], [95, 88], [88, 178], [178, 87], [87, 14],
-                    [14, 317], [317, 402], [402, 318], [318, 324], [324, 308],
-                    [78, 308],
-                    // Alis kiri
-                    [46, 53], [53, 52], [52, 65], [65, 55],
-                    // Alis kanan
-                    [276, 283], [283, 282], [282, 295], [295, 285]
-                ];
-                
-                ctx.strokeStyle = 'rgba(0, 200, 255, 0.12)';
-                ctx.lineWidth = 0.8;
-                
-                for (const [i, j] of connections) {
-                    const p1 = landmarks[i];
-                    const p2 = landmarks[j];
-                    if (p1 && p2) {
-                        ctx.beginPath();
-                        ctx.moveTo(p1.x * width, p1.y * height);
-                        ctx.lineTo(p2.x * width, p2.y * height);
-                        ctx.stroke();
-                    }
-                }
-            }
-
-            // ==================== KAMERA LAPTOP ====================
-            async function startLocalCamera() {
-                if (isStarting) return;
-                isStarting = true;
-                
-                loadingOverlay.classList.remove('hidden');
-                updateProgress(0, 'Mengaktifkan kamera...', 'Mohon izinkan akses kamera');
-                
-                try {
-                    // Matikan IP camera dulu
-                    stopIPCamera();
-                    
-                    const devices = await navigator.mediaDevices.enumerateDevices();
-                    const videoDevices = devices.filter(d => d.kind === 'videoinput');
-                    
-                    if (videoDevices.length === 0) {
-                        console.warn('Tidak ada kamera terdeteksi');
-                        noCameraOverlay.style.display = 'flex';
                         loadingOverlay.classList.add('hidden');
-                        isStarting = false;
-                        return;
-                    }
-                    
-                    console.log('Kamera terdeteksi:', videoDevices.length);
-                    
-                    localStream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            width: { ideal: 640 },
-                            height: { ideal: 480 },
-                            facingMode: 'user'
-                        },
-                        audio: false
-                    });
-                    
-                    video.srcObject = localStream;
-                    video.style.display = 'none';
-                    
-                    // Tunggu video siap
-                    await new Promise((resolve) => {
-                        if (video.readyState >= 2) {
-                            resolve();
-                        } else {
-                            video.onloadeddata = () => resolve();
+                        if (detectionRunning) {
+                            sendToFaceMesh();
                         }
-                    });
-                    
-                    // Inisialisasi FaceMesh jika belum
-                    if (!faceMesh) {
-                        initFaceMesh();
-                    }
-                    
-                    // Mulai deteksi
-                    if (faceMesh && isFaceMeshReady) {
-                        await sendToFaceMesh();
-                    }
-                    
-                    loadingOverlay.classList.add('hidden');
-                    updateStatus(true, 'local', 'Kamera laptop aktif ✓');
-                    currentMode = 'local';
-                    noCameraOverlay.style.display = 'none';
-                    
-                    btnLocal.classList.add('active');
-                    btnIP.classList.remove('active');
-                    
-                    console.log('✅ Kamera laptop berhasil diaktifkan');
-                    
-                } catch (err) {
-                    console.error('❌ Gagal mengakses kamera:', err);
-                    loadingOverlay.classList.add('hidden');
-                    
-                    let errorMsg = 'Gagal akses kamera';
-                    if (err.message.includes('Permission denied') || err.message.includes('NotAllowedError')) {
-                        errorMsg = 'Izin kamera ditolak. Izinkan akses kamera di browser.';
-                        noCameraOverlay.style.display = 'flex';
-                    } else if (err.message.includes('No device') || err.message.includes('NotFoundError')) {
-                        errorMsg = 'Tidak ada kamera terdeteksi. Pastikan kamera laptop terhubung.';
-                        noCameraOverlay.style.display = 'flex';
-                    } else {
-                        errorMsg = err.message;
-                        updateStatus(false, 'local', errorMsg);
-                    }
-                    
-                    alert('❌ ' + errorMsg + '\n\nPastikan:\n1. Anda mengizinkan akses kamera\n2. Kamera laptop terhubung dengan benar\n3. Coba refresh halaman');
-                    isStarting = false;
+                    }, 500);
                 }
-            }
+                drawResults(results);
+            });
 
-            // ==================== SEND TO FACE MESH ====================
-            async function sendToFaceMesh() {
-                if (!faceMesh || !isFaceMeshReady) {
-                    console.warn('FaceMesh belum siap');
-                    return;
-                }
-                
-                try {
-                    await faceMesh.send({ image: video });
-                    requestAnimationFrame(sendToFaceMesh);
-                } catch (err) {
-                    console.warn('FaceMesh send error:', err);
-                    setTimeout(sendToFaceMesh, 100);
-                }
-            }
-
-            // ==================== IP CAMERA ====================
-            function startIPCamera() {
-                alert('IP Camera tidak didukung dengan FaceMesh. Gunakan Kamera Laptop untuk deteksi wajah.');
-                return;
-            }
-
-            // ==================== STOP CAMERA ====================
-            function stopLocalCamera() {
-                if (localStream) {
-                    localStream.getTracks().forEach(track => track.stop());
-                    localStream = null;
-                }
-                video.srcObject = null;
-                video.style.display = 'none';
-                detectionActive = false;
-            }
-
-            function stopIPCamera() {
-                // Tidak digunakan
-            }
-
-            function stopAllCameras() {
-                isStarting = false;
-                stopLocalCamera();
+            faceMesh.initialize().then(() => {
+                console.log('✅ FaceMesh initialized');
+            }).catch((err) => {
+                console.error('❌ FaceMesh error:', err);
+                updateProgress(0, 'Gagal memuat FaceMesh', 'Error: ' + err.message);
                 loadingOverlay.classList.add('hidden');
-                updateStatus(false, 'off', 'Kamera dimatikan');
-                currentMode = 'off';
-                noCameraOverlay.style.display = 'none';
-                btnLocal.classList.remove('active');
-                btnIP.classList.remove('active');
+            });
+        }
+
+        // ==================== DRAW RESULTS ====================
+        function drawResults(results) {
+            const w = canvas.width || 640;
+            const h = canvas.height || 480;
+            ctx.clearRect(0, 0, w, h);
+            
+            if (video.videoWidth > 0) {
+                ctx.drawImage(video, 0, 0, w, h);
+            }
+            
+            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                const count = results.multiFaceLandmarks.length;
+                faceCountEl.textContent = `Wajah: ${count}`;
+                statusDotInfo.style.color = '#4caf50';
+                statusTextInfo.textContent = 'Deteksi: Aktif';
+                
+                for (const landmarks of results.multiFaceLandmarks) {
+                    // Draw points
+                    ctx.fillStyle = 'rgba(0, 255, 100, 0.6)';
+                    for (const lm of landmarks) {
+                        const x = lm.x * w;
+                        const y = lm.y * h;
+                        ctx.beginPath();
+                        ctx.arc(x, y, 1.5, 0, 2 * Math.PI);
+                        ctx.fill();
+                    }
+                    
+                    // Draw connections (simplified)
+                    ctx.strokeStyle = 'rgba(0, 200, 255, 0.1)';
+                    ctx.lineWidth = 0.5;
+                    const connections = [
+                        [10,338],[338,297],[297,332],[332,284],[284,251],[251,389],
+                        [389,356],[356,454],[454,323],[323,361],[361,288],[288,397],
+                        [397,365],[365,379],[379,378],[378,400],[400,377],[377,152],
+                        [152,148],[148,176],[176,149],[149,150],[150,136],[136,172],
+                        [172,58],[58,132],[132,93],[93,234],[234,127],[127,162],
+                        [162,21],[21,54],[54,103],[103,67],[67,109],[109,10]
+                    ];
+                    for (const [i, j] of connections) {
+                        const p1 = landmarks[i];
+                        const p2 = landmarks[j];
+                        if (p1 && p2) {
+                            ctx.beginPath();
+                            ctx.moveTo(p1.x * w, p1.y * h);
+                            ctx.lineTo(p2.x * w, p2.y * h);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            } else {
                 faceCountEl.textContent = 'Wajah: 0';
                 statusDotInfo.style.color = '#ff6b6b';
                 statusTextInfo.textContent = 'Deteksi: Off';
-                console.log('⏹️ Semua kamera dimatikan');
             }
+        }
 
-            // ==================== UPDATE STATUS ====================
-            function updateStatus(on, mode, text, isLoading) {
-                if (isLoading) {
-                    statusDot.className = 'dot-status loading';
-                    statusText.textContent = text || 'Memuat...';
-                } else if (on) {
-                    statusDot.className = 'dot-status on';
-                    statusText.textContent = text || 'Kamera aktif';
-                } else {
-                    statusDot.className = 'dot-status off';
-                    statusText.textContent = text || 'Kamera tidak aktif';
-                }
-                isCameraOn = on;
-                isStarting = false;
-                
-                if (mode === 'local') {
-                    streamModeText.textContent = '(kamera laptop)';
-                } else if (mode === 'ip') {
-                    streamModeText.textContent = '(IP camera)';
-                } else {
-                    streamModeText.textContent = '(off)';
-                }
-
-                if (on) {
-                    noCameraOverlay.style.display = 'none';
-                }
+        // ==================== SEND TO FACE MESH ====================
+        function sendToFaceMesh() {
+            if (!isFaceMeshReady || !faceMesh || !isCameraOn) {
+                detectionRunning = false;
+                return;
             }
+            detectionRunning = true;
+            faceMesh.send({ image: video }).then(() => {
+                if (detectionRunning && isCameraOn) {
+                    requestAnimationFrame(sendToFaceMesh);
+                }
+            }).catch((err) => {
+                console.warn('FaceMesh send error:', err);
+                if (detectionRunning && isCameraOn) {
+                    setTimeout(sendToFaceMesh, 100);
+                }
+            });
+        }
 
-            // ==================== EVENT LISTENERS ====================
-            btnLocal.addEventListener('click', function() {
-                if (currentMode === 'local' && isCameraOn) {
+        // ==================== START CAMERA ====================
+        async function startCamera() {
+            if (isStarting) return;
+            isStarting = true;
+            
+            loadingOverlay.classList.remove('hidden');
+            updateProgress(0, 'Mengaktifkan kamera...', 'Mohon izinkan akses kamera');
+            noCameraOverlay.style.display = 'none';
+            
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(d => d.kind === 'videoinput');
+                if (videoDevices.length === 0) {
+                    noCameraOverlay.style.display = 'flex';
+                    loadingOverlay.classList.add('hidden');
+                    updateStatus(false, 'Tidak ada kamera');
+                    isStarting = false;
                     return;
                 }
-                startLocalCamera();
-            });
+                
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+                    audio: false
+                });
+                
+                video.srcObject = localStream;
+                video.style.display = 'none';
+                
+                await new Promise((resolve) => {
+                    if (video.readyState >= 2) resolve();
+                    else video.onloadeddata = () => resolve();
+                });
+                
+                // Set canvas size
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                
+                if (!faceMesh) {
+                    initFaceMesh();
+                } else if (isFaceMeshReady) {
+                    loadingOverlay.classList.add('hidden');
+                    updateStatus(true, 'Kamera aktif');
+                    detectionRunning = true;
+                    sendToFaceMesh();
+                } else {
+                    // FaceMesh masih loading
+                    updateStatus(false, 'Menunggu FaceMesh...', true);
+                }
+                
+                updateStatus(true, 'Kamera laptop aktif');
+                streamModeText.textContent = '(kamera laptop)';
+                btnLocal.classList.add('active');
+                isStarting = false;
+                console.log('✅ Kamera aktif');
+                
+            } catch (err) {
+                console.error('❌ Camera error:', err);
+                loadingOverlay.classList.add('hidden');
+                let msg = 'Gagal akses kamera';
+                if (err.message.includes('Permission') || err.message.includes('NotAllowed')) {
+                    msg = 'Izin kamera ditolak. Izinkan akses kamera.';
+                    noCameraOverlay.style.display = 'flex';
+                } else if (err.message.includes('NotFound')) {
+                    msg = 'Tidak ada kamera terdeteksi.';
+                    noCameraOverlay.style.display = 'flex';
+                }
+                updateStatus(false, msg);
+                alert('❌ ' + msg);
+                isStarting = false;
+            }
+        }
 
-            btnIP.addEventListener('click', function() {
-                startIPCamera();
-            });
+        // ==================== STOP CAMERA ====================
+        function stopCamera() {
+            detectionRunning = false;
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            video.srcObject = null;
+            video.style.display = 'none';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            updateStatus(false, 'Kamera dimatikan');
+            streamModeText.textContent = '(off)';
+            btnLocal.classList.remove('active');
+            faceCountEl.textContent = 'Wajah: 0';
+            statusDotInfo.style.color = '#ff6b6b';
+            statusTextInfo.textContent = 'Deteksi: Off';
+            loadingOverlay.classList.add('hidden');
+            console.log('⏹️ Kamera dimatikan');
+        }
 
-            btnStop.addEventListener('click', function() {
-                stopAllCameras();
-            });
+        // ==================== EVENTS ====================
+        btnLocal.addEventListener('click', () => {
+            if (isCameraOn) return;
+            startCamera();
+        });
 
-            btnRetry.addEventListener('click', function() {
-                noCameraOverlay.style.display = 'none';
-                startLocalCamera();
-            });
+        btnStop.addEventListener('click', stopCamera);
+        btnRetry.addEventListener('click', () => {
+            noCameraOverlay.style.display = 'none';
+            startCamera();
+        });
 
-            // ==================== AUTO START ====================
-            async function autoStart() {
-                try {
-                    const devices = await navigator.mediaDevices.enumerateDevices();
-                    const videoDevices = devices.filter(d => d.kind === 'videoinput');
-                    if (videoDevices.length > 0) {
-                        console.log('✅ Kamera terdeteksi, memulai otomatis...');
-                        setTimeout(() => startLocalCamera(), 500);
-                    } else {
-                        console.warn('⚠️ Tidak ada kamera terdeteksi');
-                        noCameraOverlay.style.display = 'flex';
-                        loadingOverlay.classList.add('hidden');
-                    }
-                } catch (e) {
-                    console.warn('Gagal enumerasi device:', e);
+        // ==================== AUTO START ====================
+        async function autoStart() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(d => d.kind === 'videoinput');
+                if (videoDevices.length > 0) {
+                    console.log('✅ Kamera terdeteksi, memulai...');
+                    setTimeout(startCamera, 500);
+                } else {
                     noCameraOverlay.style.display = 'flex';
                     loadingOverlay.classList.add('hidden');
                 }
+            } catch (e) {
+                noCameraOverlay.style.display = 'flex';
+                loadingOverlay.classList.add('hidden');
             }
+        }
 
-            autoStart();
+        autoStart();
+        console.log('📹 Face Detection dengan MediaPipe FaceMesh');
+        console.log('💡 Loading model ~10MB, mohon tunggu...');
 
-            // ==================== LOG ====================
-            console.log('📹 Fisica - Face Detection');
-            console.log('📷 Mode: Kamera Laptop + FaceMesh');
-            console.log('💡 FaceMesh akan memuat model AI (≈10MB)');
-            console.log('⏳ Loading bisa memakan waktu 10-30 detik tergantung koneksi');
-
-        })();
+    })();
     </script>
 </body>
 </html>
