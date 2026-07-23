@@ -128,12 +128,13 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 1rem;
-            background: rgba(10, 15, 30, 0.85);
-            backdrop-filter: blur(6px);
+            gap: 0.8rem;
+            background: rgba(10, 15, 30, 0.92);
+            backdrop-filter: blur(8px);
             border-radius: 2rem;
             z-index: 10;
             transition: opacity 0.6s ease;
+            padding: 2rem;
         }
 
         .video-wrapper .loading-overlay.hidden {
@@ -157,14 +158,38 @@
         }
 
         .video-wrapper .loading-overlay .loading-text {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
             letter-spacing: 0.05em;
         }
 
         .video-wrapper .loading-overlay .loading-sub {
-            color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.25);
             font-size: 0.65rem;
+        }
+
+        .video-wrapper .loading-overlay .progress-bar {
+            width: 80%;
+            max-width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0.2rem 0;
+        }
+
+        .video-wrapper .loading-overlay .progress-bar .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #7fb0ff, #4caf50);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .video-wrapper .loading-overlay .progress-text {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 0.6rem;
+            font-family: 'Courier New', monospace;
         }
 
         .video-wrapper .no-camera-overlay {
@@ -222,7 +247,7 @@
         .detection-info {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.5rem 1rem;
+            gap: 0.5rem 1.2rem;
             justify-content: center;
             padding: 0.4rem 0;
             font-size: 0.7rem;
@@ -702,6 +727,9 @@
                 font-size: 0.6rem;
                 padding: 0.35rem 0.8rem;
             }
+            .video-wrapper .loading-overlay .progress-bar {
+                width: 90%;
+            }
         }
 
         @media (max-width: 430px) {
@@ -728,6 +756,10 @@
                 <div class="spinner"></div>
                 <span class="loading-text" id="loadingText">Memuat FaceMesh...</span>
                 <span class="loading-sub" id="loadingSub">MediaPipe Face Detection</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <span class="progress-text" id="progressText">0%</span>
             </div>
 
             <!-- No camera overlay -->
@@ -760,6 +792,10 @@
             <span class="info-item">
                 <i class="fas fa-robot"></i>
                 <span>FaceMesh 468 titik</span>
+            </span>
+            <span class="info-item">
+                <i class="fas fa-clock" id="fpsDisplay"></i>
+                <span>FPS: 0</span>
             </span>
         </div>
 
@@ -889,6 +925,8 @@
             const loadingOverlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');
             const loadingSub = document.getElementById('loadingSub');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
             const noCameraOverlay = document.getElementById('noCameraOverlay');
             const statusDot = document.getElementById('statusDot');
             const statusText = document.getElementById('statusText');
@@ -896,6 +934,7 @@
             const faceCountEl = document.getElementById('faceCount');
             const statusDotInfo = document.getElementById('statusDotInfo');
             const statusTextInfo = document.getElementById('statusTextInfo');
+            const fpsDisplay = document.getElementById('fpsDisplay');
 
             const btnLocal = document.getElementById('btnLocalCam');
             const btnIP = document.getElementById('btnIPCam');
@@ -909,11 +948,33 @@
             let faceMesh = null;
             let isFaceMeshReady = false;
             let detectionActive = false;
+            let frameCount = 0;
+            let lastFpsUpdate = Date.now();
+            let currentFps = 0;
+
+            // ==================== PROGRESS ====================
+            function updateProgress(percent, text, sub) {
+                const p = Math.min(100, Math.max(0, percent));
+                progressFill.style.width = p + '%';
+                progressText.textContent = Math.round(p) + '%';
+                if (text) loadingText.textContent = text;
+                if (sub) loadingSub.textContent = sub;
+            }
 
             // ==================== FACE MESH ====================
             function initFaceMesh() {
-                loadingText.textContent = 'Memuat FaceMesh...';
-                loadingSub.textContent = 'MediaPipe Face Detection';
+                updateProgress(10, 'Memuat FaceMesh...', 'Mengunduh model AI (≈10MB)');
+                
+                // Simulasi progress loading
+                let progress = 10;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 8 + 2;
+                    if (progress > 95) {
+                        progress = 95;
+                        clearInterval(interval);
+                    }
+                    updateProgress(progress, 'Memuat FaceMesh...', 'Mengunduh model AI (≈10MB)');
+                }, 500);
 
                 faceMesh = new FaceMesh({
                     locateFile: (file) => {
@@ -928,6 +989,360 @@
                     minTrackingConfidence: 0.5
                 });
 
-                faceMesh.onResults(onFaceMeshResults);
+                faceMesh.onResults((results) => {
+                    // Hentikan simulasi progress jika belum selesai
+                    clearInterval(interval);
+                    updateProgress(100, 'FaceMesh Siap!', 'Model berhasil dimuat');
+                    setTimeout(() => {
+                        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+                    }, 500);
+                    
+                    isFaceMeshReady = true;
+                    onFaceMeshResults(results);
+                });
 
-                //
+                // Mulai facemesh
+                try {
+                    faceMesh.initialize().then(() => {
+                        console.log('✅ FaceMesh initialized');
+                    }).catch((err) => {
+                        console.error('❌ FaceMesh init error:', err);
+                        updateProgress(0, 'Gagal memuat FaceMesh', 'Error: ' + err.message);
+                    });
+                } catch (err) {
+                    console.error('❌ FaceMesh error:', err);
+                    updateProgress(0, 'Gagal memuat FaceMesh', 'Error: ' + err.message);
+                }
+            }
+
+            // ==================== FACE MESH RESULTS ====================
+            function onFaceMeshResults(results) {
+                // Draw canvas
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Gambar video
+                if (video.videoWidth > 0) {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                }
+                
+                // Gambar landmark wajah
+                if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                    detectionActive = true;
+                    const faceCount = results.multiFaceLandmarks.length;
+                    faceCountEl.textContent = `Wajah: ${faceCount}`;
+                    statusDotInfo.style.color = '#4caf50';
+                    statusTextInfo.textContent = 'Deteksi: Aktif';
+                    
+                    // Draw semua wajah
+                    for (const landmarks of results.multiFaceLandmarks) {
+                        drawFaceMesh(landmarks);
+                    }
+                } else {
+                    detectionActive = false;
+                    faceCountEl.textContent = 'Wajah: 0';
+                    statusDotInfo.style.color = '#ff6b6b';
+                    statusTextInfo.textContent = 'Deteksi: Off';
+                }
+                
+                // Update FPS
+                frameCount++;
+                const now = Date.now();
+                if (now - lastFpsUpdate > 1000) {
+                    currentFps = Math.round(frameCount * 1000 / (now - lastFpsUpdate));
+                    frameCount = 0;
+                    lastFpsUpdate = now;
+                    if (fpsDisplay) {
+                        fpsDisplay.textContent = `⚡ ${currentFps}`;
+                    }
+                }
+            }
+
+            // ==================== DRAW FACE MESH ====================
+            function drawFaceMesh(landmarks) {
+                const width = canvas.width;
+                const height = canvas.height;
+                
+                // Gambar titik-titik
+                ctx.fillStyle = 'rgba(0, 255, 100, 0.6)';
+                ctx.strokeStyle = 'rgba(0, 200, 255, 0.15)';
+                ctx.lineWidth = 0.5;
+                
+                // Titik-titik wajah
+                for (const landmark of landmarks) {
+                    const x = landmark.x * width;
+                    const y = landmark.y * height;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+                
+                // Gambar koneksi (wajah)
+                const connections = [
+                    // Wajah bagian luar
+                    [10, 338], [338, 297], [297, 332], [332, 284], [284, 251], [251, 389],
+                    [389, 356], [356, 454], [454, 323], [323, 361], [361, 288], [288, 397],
+                    [397, 365], [365, 379], [379, 378], [378, 400], [400, 377], [377, 152],
+                    [152, 148], [148, 176], [176, 149], [149, 150], [150, 136], [136, 172],
+                    [172, 58], [58, 132], [132, 93], [93, 234], [234, 127], [127, 162],
+                    [162, 21], [21, 54], [54, 103], [103, 67], [67, 109], [109, 10],
+                    // Mata kiri
+                    [33, 7], [7, 163], [163, 144], [144, 145], [145, 153], [153, 154],
+                    [154, 155], [155, 133], [33, 133],
+                    // Mata kanan
+                    [362, 382], [382, 381], [381, 380], [380, 374], [374, 373],
+                    [373, 390], [390, 249], [249, 263], [263, 466], [466, 388],
+                    [388, 387], [387, 386], [386, 385], [385, 384], [384, 398],
+                    [398, 362],
+                    // Bibir luar
+                    [61, 146], [146, 91], [91, 181], [181, 84], [84, 17],
+                    [17, 314], [314, 405], [405, 321], [321, 375], [375, 291],
+                    [61, 291],
+                    // Bibir dalam
+                    [78, 95], [95, 88], [88, 178], [178, 87], [87, 14],
+                    [14, 317], [317, 402], [402, 318], [318, 324], [324, 308],
+                    [78, 308],
+                    // Alis kiri
+                    [46, 53], [53, 52], [52, 65], [65, 55],
+                    // Alis kanan
+                    [276, 283], [283, 282], [282, 295], [295, 285]
+                ];
+                
+                ctx.strokeStyle = 'rgba(0, 200, 255, 0.12)';
+                ctx.lineWidth = 0.8;
+                
+                for (const [i, j] of connections) {
+                    const p1 = landmarks[i];
+                    const p2 = landmarks[j];
+                    if (p1 && p2) {
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x * width, p1.y * height);
+                        ctx.lineTo(p2.x * width, p2.y * height);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // ==================== KAMERA LAPTOP ====================
+            async function startLocalCamera() {
+                if (isStarting) return;
+                isStarting = true;
+                
+                loadingOverlay.classList.remove('hidden');
+                updateProgress(0, 'Mengaktifkan kamera...', 'Mohon izinkan akses kamera');
+                
+                try {
+                    // Matikan IP camera dulu
+                    stopIPCamera();
+                    
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    const videoDevices = devices.filter(d => d.kind === 'videoinput');
+                    
+                    if (videoDevices.length === 0) {
+                        console.warn('Tidak ada kamera terdeteksi');
+                        noCameraOverlay.style.display = 'flex';
+                        loadingOverlay.classList.add('hidden');
+                        isStarting = false;
+                        return;
+                    }
+                    
+                    console.log('Kamera terdeteksi:', videoDevices.length);
+                    
+                    localStream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            width: { ideal: 640 },
+                            height: { ideal: 480 },
+                            facingMode: 'user'
+                        },
+                        audio: false
+                    });
+                    
+                    video.srcObject = localStream;
+                    video.style.display = 'none';
+                    
+                    // Tunggu video siap
+                    await new Promise((resolve) => {
+                        if (video.readyState >= 2) {
+                            resolve();
+                        } else {
+                            video.onloadeddata = () => resolve();
+                        }
+                    });
+                    
+                    // Inisialisasi FaceMesh jika belum
+                    if (!faceMesh) {
+                        initFaceMesh();
+                    }
+                    
+                    // Mulai deteksi
+                    if (faceMesh && isFaceMeshReady) {
+                        await sendToFaceMesh();
+                    }
+                    
+                    loadingOverlay.classList.add('hidden');
+                    updateStatus(true, 'local', 'Kamera laptop aktif ✓');
+                    currentMode = 'local';
+                    noCameraOverlay.style.display = 'none';
+                    
+                    btnLocal.classList.add('active');
+                    btnIP.classList.remove('active');
+                    
+                    console.log('✅ Kamera laptop berhasil diaktifkan');
+                    
+                } catch (err) {
+                    console.error('❌ Gagal mengakses kamera:', err);
+                    loadingOverlay.classList.add('hidden');
+                    
+                    let errorMsg = 'Gagal akses kamera';
+                    if (err.message.includes('Permission denied') || err.message.includes('NotAllowedError')) {
+                        errorMsg = 'Izin kamera ditolak. Izinkan akses kamera di browser.';
+                        noCameraOverlay.style.display = 'flex';
+                    } else if (err.message.includes('No device') || err.message.includes('NotFoundError')) {
+                        errorMsg = 'Tidak ada kamera terdeteksi. Pastikan kamera laptop terhubung.';
+                        noCameraOverlay.style.display = 'flex';
+                    } else {
+                        errorMsg = err.message;
+                        updateStatus(false, 'local', errorMsg);
+                    }
+                    
+                    alert('❌ ' + errorMsg + '\n\nPastikan:\n1. Anda mengizinkan akses kamera\n2. Kamera laptop terhubung dengan benar\n3. Coba refresh halaman');
+                    isStarting = false;
+                }
+            }
+
+            // ==================== SEND TO FACE MESH ====================
+            async function sendToFaceMesh() {
+                if (!faceMesh || !isFaceMeshReady) {
+                    console.warn('FaceMesh belum siap');
+                    return;
+                }
+                
+                try {
+                    await faceMesh.send({ image: video });
+                    requestAnimationFrame(sendToFaceMesh);
+                } catch (err) {
+                    console.warn('FaceMesh send error:', err);
+                    setTimeout(sendToFaceMesh, 100);
+                }
+            }
+
+            // ==================== IP CAMERA ====================
+            function startIPCamera() {
+                alert('IP Camera tidak didukung dengan FaceMesh. Gunakan Kamera Laptop untuk deteksi wajah.');
+                return;
+            }
+
+            // ==================== STOP CAMERA ====================
+            function stopLocalCamera() {
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                    localStream = null;
+                }
+                video.srcObject = null;
+                video.style.display = 'none';
+                detectionActive = false;
+            }
+
+            function stopIPCamera() {
+                // Tidak digunakan
+            }
+
+            function stopAllCameras() {
+                isStarting = false;
+                stopLocalCamera();
+                loadingOverlay.classList.add('hidden');
+                updateStatus(false, 'off', 'Kamera dimatikan');
+                currentMode = 'off';
+                noCameraOverlay.style.display = 'none';
+                btnLocal.classList.remove('active');
+                btnIP.classList.remove('active');
+                faceCountEl.textContent = 'Wajah: 0';
+                statusDotInfo.style.color = '#ff6b6b';
+                statusTextInfo.textContent = 'Deteksi: Off';
+                console.log('⏹️ Semua kamera dimatikan');
+            }
+
+            // ==================== UPDATE STATUS ====================
+            function updateStatus(on, mode, text, isLoading) {
+                if (isLoading) {
+                    statusDot.className = 'dot-status loading';
+                    statusText.textContent = text || 'Memuat...';
+                } else if (on) {
+                    statusDot.className = 'dot-status on';
+                    statusText.textContent = text || 'Kamera aktif';
+                } else {
+                    statusDot.className = 'dot-status off';
+                    statusText.textContent = text || 'Kamera tidak aktif';
+                }
+                isCameraOn = on;
+                isStarting = false;
+                
+                if (mode === 'local') {
+                    streamModeText.textContent = '(kamera laptop)';
+                } else if (mode === 'ip') {
+                    streamModeText.textContent = '(IP camera)';
+                } else {
+                    streamModeText.textContent = '(off)';
+                }
+
+                if (on) {
+                    noCameraOverlay.style.display = 'none';
+                }
+            }
+
+            // ==================== EVENT LISTENERS ====================
+            btnLocal.addEventListener('click', function() {
+                if (currentMode === 'local' && isCameraOn) {
+                    return;
+                }
+                startLocalCamera();
+            });
+
+            btnIP.addEventListener('click', function() {
+                startIPCamera();
+            });
+
+            btnStop.addEventListener('click', function() {
+                stopAllCameras();
+            });
+
+            btnRetry.addEventListener('click', function() {
+                noCameraOverlay.style.display = 'none';
+                startLocalCamera();
+            });
+
+            // ==================== AUTO START ====================
+            async function autoStart() {
+                try {
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    const videoDevices = devices.filter(d => d.kind === 'videoinput');
+                    if (videoDevices.length > 0) {
+                        console.log('✅ Kamera terdeteksi, memulai otomatis...');
+                        setTimeout(() => startLocalCamera(), 500);
+                    } else {
+                        console.warn('⚠️ Tidak ada kamera terdeteksi');
+                        noCameraOverlay.style.display = 'flex';
+                        loadingOverlay.classList.add('hidden');
+                    }
+                } catch (e) {
+                    console.warn('Gagal enumerasi device:', e);
+                    noCameraOverlay.style.display = 'flex';
+                    loadingOverlay.classList.add('hidden');
+                }
+            }
+
+            autoStart();
+
+            // ==================== LOG ====================
+            console.log('📹 Fisica - Face Detection');
+            console.log('📷 Mode: Kamera Laptop + FaceMesh');
+            console.log('💡 FaceMesh akan memuat model AI (≈10MB)');
+            console.log('⏳ Loading bisa memakan waktu 10-30 detik tergantung koneksi');
+
+        })();
+    </script>
+</body>
+</html>
