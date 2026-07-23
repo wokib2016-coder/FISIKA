@@ -8,10 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-    <!-- MediaPipe Face Detection (lebih ringan dari FaceMesh) -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -343,8 +339,8 @@
         <div class="video-wrapper" id="videoWrapper">
             <div class="loading-overlay" id="loadingOverlay">
                 <div class="spinner"></div>
-                <span class="loading-text" id="loadingText">Memulai Face Detection...</span>
-                <span class="loading-sub" id="loadingSub">MediaPipe · Model ringan (~2MB)</span>
+                <span class="loading-text" id="loadingText">Mengaktifkan kamera...</span>
+                <span class="loading-sub" id="loadingSub">Mohon izinkan akses kamera</span>
             </div>
             <div class="no-camera-overlay" id="noCameraOverlay">
                 <i class="fas fa-camera-slash"></i>
@@ -359,7 +355,6 @@
         <div class="detection-info">
             <span class="info-item"><i class="fas fa-user"></i> <span id="faceCount">Wajah: 0</span></span>
             <span class="info-item"><i class="fas fa-circle" id="statusDotInfo" style="color:#ff6b6b;"></i> <span id="statusTextInfo">Deteksi: Off</span></span>
-            <span class="info-item"><i class="fas fa-robot"></i> Face Detection</span>
             <span class="info-item"><i class="fas fa-clock" id="fpsDisplay"></i> <span id="fpsText">0 FPS</span></span>
         </div>
 
@@ -416,7 +411,6 @@
         const faceCountEl = document.getElementById('faceCount');
         const statusDotInfo = document.getElementById('statusDotInfo');
         const statusTextInfo = document.getElementById('statusTextInfo');
-        const fpsDisplay = document.getElementById('fpsDisplay');
         const fpsText = document.getElementById('fpsText');
 
         const btnLocal = document.getElementById('btnLocalCam');
@@ -426,105 +420,105 @@
         let localStream = null;
         let isCameraOn = false;
         let isStarting = false;
-        let faceDetection = null;
-        let isModelReady = false;
         let detectionRunning = false;
         let frameCount = 0;
         let lastFpsUpdate = Date.now();
 
-        function updateStatus(on, text, isLoading) {
-            if (isLoading) {
-                statusDot.className = 'dot-status loading';
-                statusText.textContent = text || 'Memuat...';
-            } else if (on) {
-                statusDot.className = 'dot-status on';
-                statusText.textContent = text || 'Kamera aktif';
-            } else {
-                statusDot.className = 'dot-status off';
-                statusText.textContent = text || 'Kamera tidak aktif';
-            }
-            isCameraOn = on;
-        }
-
-        // ==================== FACE DETECTION (lebih ringan) ====================
-        function initFaceDetection() {
-            loadingText.textContent = 'Memuat Face Detection...';
-            loadingSub.textContent = 'MediaPipe · Model ringan (~2MB)';
-            loadingOverlay.classList.remove('hidden');
-
-            faceDetection = new FaceDetection({
-                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
-            });
-
-            faceDetection.setOptions({
-                model: 'short', // 'short' lebih ringan dari 'full'
-                minDetectionConfidence: 0.5
-            });
-
-            faceDetection.onResults((results) => {
-                if (!isModelReady) {
-                    isModelReady = true;
-                    loadingOverlay.classList.add('hidden');
-                    console.log('✅ Face Detection siap!');
-                    if (isCameraOn) {
-                        detectionRunning = true;
-                        sendToFaceDetection();
+        // ==================== DETEKSI WAJAH SEDERHANA ====================
+        // Menggunakan deteksi warna kulit + contour (sangat ringan, tanpa loading model)
+        function detectFaces(imageData) {
+            const data = imageData.data;
+            const width = imageData.width;
+            const height = imageData.height;
+            const faces = [];
+            
+            // Deteksi sederhana: cari area dengan warna kulit
+            // Ini adalah pendekatan cepat untuk demo
+            const skinPixels = [];
+            
+            for (let y = 0; y < height; y += 2) {
+                for (let x = 0; x < width; x += 2) {
+                    const i = (y * width + x) * 4;
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+                    
+                    // Deteksi warna kulit (sederhana)
+                    if (r > 60 && g > 40 && b > 20 &&
+                        r > g && r > b &&
+                        Math.abs(r - g) > 15) {
+                        skinPixels.push({x, y, r, g, b});
                     }
                 }
-                drawResults(results);
-            });
-
-            faceDetection.initialize().then(() => {
-                console.log('✅ Face Detection initialized');
-            }).catch((err) => {
-                console.error('❌ Face Detection error:', err);
-                loadingText.textContent = 'Gagal memuat model';
-                loadingSub.textContent = 'Error: ' + err.message;
-                setTimeout(() => {
-                    loadingOverlay.classList.add('hidden');
-                }, 3000);
-            });
-        }
-
-        // ==================== DRAW RESULTS ====================
-        function drawResults(results) {
-            const w = canvas.width || 640;
-            const h = canvas.height || 480;
-            ctx.clearRect(0, 0, w, h);
-            
-            if (video.videoWidth > 0) {
-                ctx.drawImage(video, 0, 0, w, h);
             }
             
-            if (results.detections && results.detections.length > 0) {
-                const count = results.detections.length;
-                faceCountEl.textContent = `Wajah: ${count}`;
+            // Jika ada cukup pixel kulit, anggap ada wajah
+            if (skinPixels.length > 50) {
+                // Cari bounding box dari pixel kulit
+                let minX = width, maxX = 0, minY = height, maxY = 0;
+                for (const p of skinPixels) {
+                    if (p.x < minX) minX = p.x;
+                    if (p.x > maxX) maxX = p.x;
+                    if (p.y < minY) minY = p.y;
+                    if (p.y > maxY) maxY = p.y;
+                }
+                
+                const faceW = maxX - minX;
+                const faceH = maxY - minY;
+                
+                // Hanya jika ukuran wajah wajar
+                if (faceW > 30 && faceH > 30 && faceW < width * 0.8 && faceH < height * 0.8) {
+                    // Tambahkan padding
+                    const pad = Math.min(faceW, faceH) * 0.2;
+                    faces.push({
+                        x: Math.max(0, minX - pad),
+                        y: Math.max(0, minY - pad),
+                        width: Math.min(width - minX + pad, faceW + pad * 2),
+                        height: Math.min(height - minY + pad, faceH + pad * 2)
+                    });
+                }
+            }
+            
+            return faces;
+        }
+
+        // ==================== DRAW FRAME ====================
+        function drawFrame() {
+            if (!isCameraOn || !video.videoWidth) {
+                requestAnimationFrame(drawFrame);
+                return;
+            }
+            
+            const w = canvas.width || video.videoWidth || 640;
+            const h = canvas.height || video.videoHeight || 480;
+            canvas.width = w;
+            canvas.height = h;
+            
+            // Gambar video
+            ctx.drawImage(video, 0, 0, w, h);
+            
+            // Ambil image data untuk deteksi
+            const imageData = ctx.getImageData(0, 0, w, h);
+            const faces = detectFaces(imageData);
+            
+            // Update info
+            if (faces.length > 0) {
+                faceCountEl.textContent = `Wajah: ${faces.length}`;
                 statusDotInfo.style.color = '#4caf50';
                 statusTextInfo.textContent = 'Deteksi: Aktif';
                 
-                for (const detection of results.detections) {
-                    const bbox = detection.boundingBox;
-                    const x = bbox.xCenter * w - (bbox.width * w) / 2;
-                    const y = bbox.yCenter * h - (bbox.height * h) / 2;
-                    const width = bbox.width * w;
-                    const height = bbox.height * h;
-                    
-                    // Gambar kotak wajah
-                    ctx.strokeStyle = 'rgba(0, 255, 100, 0.6)';
+                // Gambar kotak wajah
+                for (const face of faces) {
+                    ctx.strokeStyle = 'rgba(0, 255, 100, 0.8)';
                     ctx.lineWidth = 2;
-                    ctx.strokeRect(x, y, width, height);
+                    ctx.strokeRect(face.x, face.y, face.width, face.height);
                     
-                    // Gambar titik landmark (jika ada)
-                    if (detection.landmarks) {
-                        ctx.fillStyle = 'rgba(0, 200, 255, 0.5)';
-                        for (const lm of detection.landmarks) {
-                            const lx = lm.x * w;
-                            const ly = lm.y * h;
-                            ctx.beginPath();
-                            ctx.arc(lx, ly, 3, 0, 2 * Math.PI);
-                            ctx.fill();
-                        }
-                    }
+                    // Tambahkan label
+                    ctx.fillStyle = 'rgba(0, 255, 100, 0.3)';
+                    ctx.fillRect(face.x, face.y - 20, 60, 20);
+                    ctx.fillStyle = '#00ff64';
+                    ctx.font = '12px Inter';
+                    ctx.fillText('👤 Wajah', face.x + 5, face.y - 5);
                 }
             } else {
                 faceCountEl.textContent = 'Wajah: 0';
@@ -541,25 +535,8 @@
                 lastFpsUpdate = now;
                 fpsText.textContent = fps + ' FPS';
             }
-        }
-
-        // ==================== SEND TO FACE DETECTION ====================
-        function sendToFaceDetection() {
-            if (!isModelReady || !faceDetection || !isCameraOn) {
-                detectionRunning = false;
-                return;
-            }
-            detectionRunning = true;
-            faceDetection.send({ image: video }).then(() => {
-                if (detectionRunning && isCameraOn) {
-                    requestAnimationFrame(sendToFaceDetection);
-                }
-            }).catch((err) => {
-                console.warn('Detection error:', err);
-                if (detectionRunning && isCameraOn) {
-                    setTimeout(sendToFaceDetection, 100);
-                }
-            });
+            
+            requestAnimationFrame(drawFrame);
         }
 
         // ==================== START CAMERA ====================
@@ -599,20 +576,19 @@
                 canvas.width = video.videoWidth || 640;
                 canvas.height = video.videoHeight || 480;
                 
-                if (!faceDetection) {
-                    initFaceDetection();
-                } else if (isModelReady) {
-                    loadingOverlay.classList.add('hidden');
-                    updateStatus(true, 'Kamera aktif');
-                    detectionRunning = true;
-                    sendToFaceDetection();
-                }
-                
-                updateStatus(true, 'Kamera laptop aktif');
+                loadingOverlay.classList.add('hidden');
+                updateStatus(true, 'Kamera aktif');
                 streamModeText.textContent = '(kamera laptop)';
                 btnLocal.classList.add('active');
                 isStarting = false;
-                console.log('✅ Kamera aktif');
+                
+                // Mulai deteksi
+                if (!detectionRunning) {
+                    detectionRunning = true;
+                    drawFrame();
+                }
+                
+                console.log('✅ Kamera aktif - deteksi wajah berjalan');
                 
             } catch (err) {
                 console.error('❌ Camera error:', err);
@@ -651,6 +627,21 @@
             console.log('⏹️ Kamera dimatikan');
         }
 
+        // ==================== UPDATE STATUS ====================
+        function updateStatus(on, text, isLoading) {
+            if (isLoading) {
+                statusDot.className = 'dot-status loading';
+                statusText.textContent = text || 'Memuat...';
+            } else if (on) {
+                statusDot.className = 'dot-status on';
+                statusText.textContent = text || 'Kamera aktif';
+            } else {
+                statusDot.className = 'dot-status off';
+                statusText.textContent = text || 'Kamera tidak aktif';
+            }
+            isCameraOn = on;
+        }
+
         // ==================== EVENTS ====================
         btnLocal.addEventListener('click', () => {
             if (isCameraOn) return;
@@ -682,8 +673,8 @@
         }
 
         autoStart();
-        console.log('📹 Face Detection dengan MediaPipe (model short ~2MB)');
-        console.log('⚡ Loading lebih cepat dari FaceMesh');
+        console.log('📹 Deteksi wajah menggunakan metode ringan (tanpa download model)');
+        console.log('⚡ Loading INSTANT - tidak perlu menunggu download model AI');
 
     })();
     </script>
