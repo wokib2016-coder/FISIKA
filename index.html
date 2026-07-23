@@ -78,7 +78,6 @@
             box-shadow: 0 50px 80px -18px rgba(0, 0, 0, 0.9);
         }
 
-        /* VIDEO STREAM - Dual mode: WebRTC + IP Camera */
         .video-wrapper {
             position: relative;
             width: 100%;
@@ -98,7 +97,6 @@
             box-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
         }
 
-        /* Video element untuk WebRTC / kamera lokal */
         .video-wrapper #localVideo {
             display: none;
             width: 100%;
@@ -112,7 +110,6 @@
             transform: scaleX(-1);
         }
 
-        /* Iframe untuk IP Camera */
         .video-wrapper #ipCameraIframe {
             display: none;
             width: 100%;
@@ -124,7 +121,6 @@
             outline: none;
         }
 
-        /* Loading overlay */
         .video-wrapper .loading-overlay {
             position: absolute;
             inset: 0;
@@ -171,7 +167,58 @@
             font-size: 0.65rem;
         }
 
-        /* Kontrol kamera */
+        .video-wrapper .no-camera-overlay {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            background: rgba(10, 15, 30, 0.92);
+            backdrop-filter: blur(8px);
+            border-radius: 2rem;
+            color: #9bb8e8;
+            padding: 2rem;
+            text-align: center;
+            z-index: 5;
+        }
+
+        .video-wrapper .no-camera-overlay i {
+            font-size: 3.5rem;
+            opacity: 0.25;
+            color: #ff6b6b;
+        }
+
+        .video-wrapper .no-camera-overlay .title {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .video-wrapper .no-camera-overlay .sub {
+            font-size: 0.8rem;
+            opacity: 0.5;
+            max-width: 400px;
+        }
+
+        .video-wrapper .no-camera-overlay .btn-retry-cam {
+            margin-top: 0.3rem;
+            padding: 0.5rem 1.8rem;
+            background: rgba(70, 150, 255, 0.1);
+            border: 1px solid rgba(70, 150, 255, 0.15);
+            border-radius: 30px;
+            color: #8bb4f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .video-wrapper .no-camera-overlay .btn-retry-cam:hover {
+            background: rgba(70, 150, 255, 0.2);
+            transform: scale(1.02);
+        }
+
         .camera-controls {
             display: flex;
             flex-wrap: wrap;
@@ -228,7 +275,6 @@
             background: rgba(255, 107, 107, 0.1);
         }
 
-        /* Status indikator */
         .cam-status {
             text-align: center;
             font-size: 0.7rem;
@@ -645,6 +691,16 @@
                 <span class="loading-sub" id="loadingSub">Pastikan kamera terhubung</span>
             </div>
 
+            <!-- No camera overlay -->
+            <div class="no-camera-overlay" id="noCameraOverlay">
+                <i class="fas fa-camera-slash"></i>
+                <span class="title">Kamera tidak terdeteksi</span>
+                <span class="sub">Pastikan kamera laptop terhubung dan izinkan akses kamera di browser</span>
+                <button class="btn-retry-cam" id="btnRetryCam">
+                    <i class="fas fa-sync-alt"></i> Coba Lagi
+                </button>
+            </div>
+
             <!-- Video untuk WebRTC (kamera lokal / laptop) -->
             <video id="localVideo" autoplay muted playsinline></video>
 
@@ -710,241 +766,350 @@
             <div class="tag-fisika">
                 <span><i class="fas fa-circle" style="font-size: 0.3rem; vertical-align: middle; color: #5f9eff;"></i> Mekanika</span>
                 <span><i class="fas fa-circle" style="font-size: 0.3rem; vertical-align: middle; color: #5f9eff;"></i> Termodinamika</span>
-                <span><i class="fas fa-circle" style="font-size: 0.3rem; vertical-align: middle; color: #5f9eff;"></i> Gelombang</span>
+                <span><i class="fas fa-circle" style="font-size: 0><i class="fas fa-circle" style="font-size:.3rem; vertical-align 0.3rem; vertical-align: middle; color: #5f: middle; color: #5f9eff;"></i> Gelomb9eff;"></i> Gelombang</span>
+ang</span>
+            </div>
             </div>
         </div>
 
-        <!-- Deskripsi -->
-        <div class="deskripsi">
+        </div>
+
+        <!-- Deskri        <!-- Deskripsi -->
+       psi -->
+        <div class="des <div class="deskripsi">
+kripsi">
             <p>
-                <i class="fas fa-quote-left" style="opacity: 0.2; margin-right: 6px; color: #7fb0ff;"></i>
-                Saya <strong>Fisica</strong> — seorang guru yang percaya bahwa fisika adalah 
-                <span class="highlight">puisi alam semesta</span>. 
-                Dari gerak bintang hingga getaran senar, 
-                saya mengajar bukan sekadar rumus, melainkan <strong>cara berpikir</strong> dan 
-                <strong>kagum pada realitas</strong>.
-            </p>
+                <i class="fas fa-qu            <p>
+                <i class="fas fa-quote-left" style="opacity:ote-left" style="opacity: 0.2; margin-right: 0.2; margin-right: 6px; color: #7 6px; color: #7fb0ff;"></i>
+                Sfb0ff;"></i>
+                Saya <strong>Fisica</aya <strong>Fisica</strong> — seorang guru yang percayastrong> — seorang guru yang percaya bahwa fisika adalah bahwa fisika adalah 
+                <span class="highlight">puisi alam sem 
+                <span class="highlight">esta</span>. 
+                Daripuisi alam semesta</span>. 
+                Dari gerak bintang hingga gerak bintang hingga get getaran senar, 
+                sayaaran senar, 
+                saya mengajar bukan sekadar rumus mengajar bukan sekadar rumus, melainkan <strong>cara, melainkan <strong berpikir>cara berpikir</strong> dan 
+                <strong>k</strong> dan 
+                <strong>kagum pada realagum pada realitas</strong>itas</strong>.
+            </.
+            </pp>
+>
             <p style="margin-top: 0.4rem;">
-                Setiap hari, saya berbagi cerita tentang <span class="highlight">energi</span>, 
-                <span class="highlight">materi</span>, dan <span class="highlight">ruang-waktu</span>. 
-                Bagi saya, ruang kelas adalah laboratorium imajinasi, 
-                dan setiap murid adalah <strong>penjelajah</strong> yang sedang menemukan 
-                keajaiban di balik fenomena.
+                Setiap hari            <p style="margin-top: 0.4rem;">
+                Setiap hari,, saya berbagi saya berbagi cerita tentang cerita tentang <span class="highlight <span class="highlight">energi</">energi</span>, 
+               span>, 
+                <span class="highlight">materi</ <span class="highlight">materi</span>, dan <spanspan>, dan <span class class="highlight">ruang="highlight">ruang-waktu</-waktu</span>. 
+               span>. 
+                Bagi saya, Bagi saya, ruang kelas adalah ruang kelas adalah laboratorium imaj laboratorium imajinasi, 
+inasi, 
+                dan setiap murid adalah <strong                dan setiap murid adalah <strong>>penjelajah</strong> yang sedang menemukanpenjelajah</strong> yang sedang menemukan 
+                keaja 
+                keajaiban di baliban di balik fenomena.
+ik fenomena.
             </p>
+            </p>
+        </div>
+
         </div>
 
         <!-- Quote -->
-        <div class="quote-block">
-            <i class="fas fa-quote-right"></i>
-            “Fisika mengajarkan kita bahwa semua hal terhubung — dari elektron hingga galaksi.”
-            <span>— Fisica</span>
+        <!-- Quote -->
+        <div class        <div class="quote-block">
+="quote-block">
+            <i class            <i class="fas fa-quote-right"></i="fas fa-quote-right"></i>
+            “F>
+            “Fisika mengajisika mengajarkan kita bahwa semuaarkan kita bahwa semua hal terhubung — dari elektron hingga galaksi.”
+            hal terhubung — dari elektron hingga <span>— Fisica</ galaksi.”
+            <span>—span>
+        </div>
+
+ Fisica</span>
         </div>
 
         <!-- Sosial -->
+               <!-- Sosial -->
         <div class="sosial">
-            <span class="sosial-item">
-                <i class="fas fa-envelope"></i> fisica@guru.edu
+            <div class="sosial">
+            <span class="sosial-item <span class="sosial-item">
+                <i class="fas fa">
+                <i class="fas fa-envelope"></i> fisica-envelope"></i> fisica@guru.edu
             </span>
+@guru.edu
+                       <span class=" </span>
             <span class="sosial-item">
-                <i class="fas fa-phone-alt"></i> +62 811 2233 4455
+                <isosial-item">
+                <i class="fas fa-phone-alt"></ class="fas fa-phone-alt"></i> +62 811 223i> +62 811 2233 4455
+3 4455
             </span>
+            <span class="sos            </span>
             <span class="sosial-item">
-                <i class="fab fa-instagram"></i> @fisica.mengajar
+               ial-item">
+                <i class=" <i class="fab fa-instagramfab fa-instagram"></i> @"></i> @fisica.mfisica.mengajar
+           engajar
             </span>
+            </span>
+            <span class=" <span class="sosial-item">
+                <isosial-item">
+                <i class="fab fa-youtube"></i class="fab fa-youtube"></i> Fisica Channel
+            </span> Fisica Channel
+            </span>
+            <span class="sos>
             <span class="sosial-item">
-                <i class="fab fa-youtube"></i> Fisica Channel
+                <iial-item">
+                <i class=" class="fab fa-twitterfab fa-twitter"></i> @"></i> @fisica_fisica_phys
+            </phys
             </span>
-            <span class="sosial-item">
-                <i class="fab fa-twitter"></i> @fisica_phys
-            </span>
+        </span>
         </div>
+
+       div>
 
         <!-- Dekorasi -->
-        <div class="molekul">
-            <i class="fas fa-circle" style="font-size: 0.4rem;"></i>
-            <i class="fas fa-circle" style="font-size: 0.6rem;"></i>
-            <i class="fas fa-circle" style="font-size: 0.3rem;"></i>
-            <span style="margin-left: 6px;">⚛️</span>
+ <!-- Dekorasi -->
+        <div        <div class="molekul">
+            <i class=" class="molekul">
+            <i class="fas fafas fa-circle" style="-circle" style="font-size: font-size: 0.4rem0.4rem;"></i>
+           ;"></i>
+            <i class=" <i class="fas fa-circle"fas fa-circle" style="font-size: 0.6rem;"></i style="font-size: 0.6rem;"></i>
+            <i>
+            <i class="fas class="fas fa-circle" style=" fa-circle" style="font-size: 0.3remfont-size: 0.3rem;"></i>
+            <span style=";"></i>
+            <span style="margin-left: 6px;">margin-left: 6px;">⚛️</span>
+        </div⚛️</span>
         </div>
 
-        <div style="position: absolute; bottom: 14px; left: 30px; opacity: 0.04; font-size: 0.7rem; color: #aac8ff; font-weight: 300; letter-spacing: 3px; pointer-events: none;">
+        <div>
+
+        <div style="position: absolute; bottom: 14 style="position: absolute; bottom:px; left: 30 14px; left: 30px; opacity: 0.04px; opacity: 0.04; font-size: 0.; font-size: 0.7rem; color: #a7rem; color: #aac8ff; fontac8ff; font-weight: 300; letter-spacing-weight: 300; letter-spacing: 3px; pointer-events: 3px; pointer-events: none;">
+            e = mc²: none;">
             e = mc²
+        </div>
+    </div
         </div>
     </div>
 
     <script>
-        (function() {
-            'use strict';
+>
 
-            const STREAM_URL = 'http://10.101.209.113/';
+    <script>
+        (function        (function() {
+            '() {
+            'useuse strict';
+
+            const STREAM_URL strict';
+
+            const STREAM_URL = 'http:// = 'http://10.101.209.113/';
+            
+            //10.101.209.113/';
             
             // Elements
-            const localVideo = document.getElementById('localVideo');
+            const Elements
+            const localVideo = document localVideo = document.getElementById('.getElementById('localVideo');
+            const ipIframe = documentlocalVideo');
             const ipIframe = document.getElementById('ipCameraIframe');
+           .getElementById('ipCamera const loadingOverlayIframe');
             const loadingOverlay = document.getElementById('loadingOverlay');
-            const loadingText = document.getElementById('loadingText');
-            const loadingSub = document.getElementById('loadingSub');
+ = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('            const loadingText = document.getElementById('loadingText');
+            const loadingSub =loadingText');
+            const loadingSub document.getElementById('loadingSub = document.getElementById('loading');
+            const statusSub');
             const statusDot = document.getElementById('statusDot');
-            const statusText = document.getElementById('statusText');
-            const streamModeText = document.getElementById('streamModeText');
+Dot = document.getElementById('statusDot');
+            const statusText = document.getElementById('            const statusText = document.getElementById('statusText');
+            const streamModeTextstatusText');
+            const streamModeText = document.getElementById('streamModeText = document.getElementById('streamModeText');
+            const noCameraOverlay = document');
+            const noCamera.getElementById('noCameraOverlay');
             
-            const btnLocal = document.getElementById('btnLocalCam');
-            const btnIP = document.getElementById('btnIPCam');
-            const btnStop = document.getElementById('btnStopCam');
+Overlay = document.getElementById('noCameraOverlay');
+            
+            const btnLocal            const btnLocal = document.getElementById(' = document.getElementById('btnLocalCam');
+btnLocalCam');
+            const btnIP            const btnIP = document = document.getElementById('btnIPCam');
+.getElementById('btnIPCam');
+            const btnStop = document.getElementById('            const btnStop = document.getElementById('btnStopCam');
+            const btnRetbtnStopCam');
+            const btnRetry = document.getElementById('btnry = document.getElementById('btnRetryCam');
+
+            let localStreamRetryCam');
 
             let localStream = null;
-            let currentMode = 'local'; // 'local' or 'ip'
-            let isCameraOn = false;
+            = null;
+            let currentMode = let currentMode = 'local';
+            'local';
+            let isCameraOn = false let isCameraOn = false;
+           ;
             let isStarting = false;
 
-            // Fungsi update status
-            function updateStatus(on, mode, text, isLoading) {
+            function let isStarting = false;
+
+            function updateStatus(on, mode, updateStatus(on, mode, text, isLoading) {
+                if ( text, isLoading) {
                 if (isLoading) {
-                    statusDot.className = 'dot-status loading';
-                    statusText.textContent = text || 'Memuat...';
+isLoading) {
+                    statusDot.className = 'dot                    statusDot.className = 'dot-status loading';
+                    statusText.textContent-status loading';
+                    statusText.textContent = text || 'Memuat... = text || 'Memuat...';
+';
                 } else if (on) {
+                    statusDot.class                } else if (on) {
                     statusDot.className = 'dot-status on';
+                   Name = 'dot-status on';
                     statusText.textContent = text || 'Kamera aktif';
                 } else {
-                    statusDot.className = 'dot-status off';
-                    statusText.textContent = text || 'Kamera tidak aktif';
+ statusText.textContent = text || '                    statusDot.className = 'Kamera aktif';
+                } else {
+                    statusDot.className = 'dotdot-status off';
+                    status-status off';
+                    statusText.textContentText.textContent = text || ' = text || 'Kamera tidak aktifKamera tidak aktif';
                 }
-                isCameraOn = on;
+               ';
+                }
+                isCameraOn = isCameraOn = on;
+                is on;
                 isStarting = false;
+                
+                if (modeStarting = false;
                 
                 if (mode === 'local') {
-                    streamModeText.textContent = '(kamera laptop)';
-                } else if (mode === 'ip') {
+                    stream === 'local') {
+                    streamModeText.textContentModeText.textContent = '( = '(kamera laptop)';
+kamera laptop)';
+                } else if (mode === '                } else if (mode === 'ip') {
+                    streamModeText.textip') {
                     streamModeText.textContent = '(IP camera)';
+               Content = '(IP camera)';
                 } else {
-                    streamModeText.textContent = '(off)';
+                    stream } else {
+                    streamModeText.textModeText.textContent = '(offContent = '(off)';
+                }
+
+                // Sembunyikan no)';
+                }
+
+                // Sembunyikan no camera overlay jika camera overlay jika kamera kamera aktif
+                aktif
+                if (on) {
+ if (on) {
+                    noCamera                    noCameraOverlay.style.displayOverlay.style.display = 'none';
+ = 'none';
                 }
             }
 
-            // Fungsi hide loading
             function hideLoading() {
-                loadingOverlay.classList.add('hidden');
+                loading                }
             }
 
-            // Fungsi show loading
+            function hideLoading() {
+                loadingOverlay.classList.addOverlay.classList.add('hidden');
+           ('hidden');
+            }
+
+            function show }
+
             function showLoading(text, sub) {
-                loadingOverlay.classList.remove('hidden');
-                if (text) loadingText.textContent = text;
-                if (sub) loadingSub.textContent = sub;
-                updateStatus(false, currentMode, 'Menghubungkan...', true);
+Loading(text, sub) {
+                loadingOverlay                loadingOverlay.classList.remove('hidden');
+                if (text) loading.classList.remove('hidden');
+                if (text) loadingText.textContent =Text.textContent = text;
+                if text;
+                if (sub) loading (sub) loadingSub.textContent =Sub.textContent = sub;
+                no sub;
+                noCameraOverlay.style.display = 'none';
+               CameraOverlay.style.display = 'none';
+                updateStatus(false, currentMode updateStatus(false, currentMode, 'Menghubungkan..., 'Menghubungkan...', true);
             }
 
-            // ==================== KAMERA LAPTOP (WebRTC) ====================
+           ', true);
+            }
+
+            function showNoCamera() function showNoCamera() {
+                hideLoading();
+                noCameraOverlay.style {
+                hideLoading();
+                noCameraOverlay.style.display = 'flex.display = 'flex';
+               ';
+                updateStatus(false, current updateStatus(false, currentMode, 'Kamera tidak terdetMode, 'Kamera tidak terdeteksi');
+            }
+
+            // =================eksi');
+            }
+
+            // ==================== KAMERA LAPTOP=== KAMERA LAPTOP (WebRTC) = (WebRTC) ====================
+            async function startLocalCamera()===================
             async function startLocalCamera() {
+                if ( {
                 if (isStarting) return;
+                isStartingisStarting) return;
                 isStarting = true;
                 
-                showLoading('Mengaktifkan kamera laptop...', 'Mohon izinkan akses kamera');
+ = true;
+                
+                showLoading('                showLoading('Mengaktifkan kamera laptop...Mengaktifkan kamera laptop...', 'Moh', 'Mohon izinkan akses kamera');
+                
+                tryon izinkan akses kamera');
                 
                 try {
+                    // Matikan IP {
                     // Matikan IP camera dulu
+                    stop camera dulu
                     stopIPCamera();
                     
-                    localStream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 },
-                            facingMode: 'user'
-                        },
-                        audio: false
-                    });
+                    // Cek apakahIPCamera();
                     
-                    localVideo.srcObject = localStream;
-                    localVideo.style.display = 'block';
-                    ipIframe.style.display = 'none';
+                    // Cek apakah ada kam ada kameraera
+                    const
+                    const devices = devices = await navigator.mediaDevices.enumerateDev await navigator.mediaDevices.enumerateDevices();
+                    const videoDevices();
+                    const videoDevices = devices.filter(d => dices = devices.filter.kind === 'videoinput');
                     
-                    hideLoading();
-                    updateStatus(true, 'local', 'Kamera laptop aktif');
-                    currentMode = 'local';
+                   (d => d.kind === 'videoinput');
                     
-                    btnLocal.classList.add('active');
-                    btnIP.classList.remove('active');
-                    
-                    console.log('✅ Kamera laptop berhasil diaktifkan');
-                    
-                } catch (err) {
-                    console.error('❌ Gagal mengakses kamera:', err);
-                    hideLoading();
-                    
-                    let errorMsg = 'Gagal akses kamera';
-                    if (err.message.includes('Permission denied')) {
-                        errorMsg = 'Izin kamera ditolak. Izinkan akses kamera di browser.';
-                    } else if (err.message.includes('No device')) {
-                        errorMsg = 'Tidak ada kamera terdeteksi. Pastikan kamera laptop terhubung.';
-                    } else if (err.message.includes('NotAllowedError')) {
-                        errorMsg = 'Akses kamera ditolak. Klik izinkan di popup browser.';
-                    } else {
-                        errorMsg = err.message;
+                    if (videoDev if (videoDevices.length === ices.length === 0) {
+0) {
+                        console.warn                        console.warn('T('Tidak ada kameraidak ada kamera terdeteksi');
+                        showNoCamera terdeteksi');
+                        showNoCamera();
+                        isStarting = false;
+();
+                        isStarting = false;
+                        return;
                     }
                     
-                    updateStatus(false, 'local', errorMsg);
-                    alert('❌ ' + errorMsg + '\n\nPastikan:\n1. Anda mengizinkan akses kamera\n2. Kamera laptop terhubung dengan benar');
-                    isStarting = false;
-                }
-            }
-
-            // ==================== IP CAMERA ====================
-            function startIPCamera() {
-                if (isStarting) return;
-                isStarting = true;
-                
-                showLoading('Menghubungkan ke IP Camera...', 'http://10.101.209.113/');
-                
-                // Matikan kamera lokal dulu
-                stopLocalCamera();
-                
-                // Sembunyikan video lokal
-                localVideo.style.display = 'none';
-                localVideo.srcObject = null;
-                
-                // Tampilkan iframe
-                ipIframe.style.display = 'block';
-                ipIframe.src = STREAM_URL + '?_t=' + Date.now();
-                
-                // Set timeout untuk iframe
-                setTimeout(() => {
-                    hideLoading();
-                    updateStatus(true, 'ip', 'IP Camera terhubung');
-                    currentMode = 'ip';
+                    console                        return;
+                    }
                     
-                    btnIP.classList.add('active');
-                    btnLocal.classList.remove('active');
-                    isStarting = false;
+                    console.log('Kamera.log('Kamera ter terdeteksi:', videoDevices.lengthdeteksi:', videoDevices.length);
                     
-                    console.log('✅ IP Camera diaktifkan:', STREAM_URL);
-                }, 3000);
-            }
-
-            // ==================== STOP CAMERA ====================
-            function stopLocalCamera() {
-                if (localStream) {
-                    localStream.getTracks().forEach(track => track.stop());
-                    localStream = null;
-                }
-                localVideo.srcObject = null;
-                localVideo.style.display = 'none';
-            }
-
-            function stopIPCamera() {
-                ipIframe.src = 'about:blank';
-                ipIframe.style.display = 'none';
-            }
-
-            function stopAllCameras() {
-                isStarting = false;
-                stopLocalCamera();
-                stopIPCamera();
-                hideLoading();
-                updateStatus(false, 'off', 'Kamera dimatikan');
-                currentMode = 'off';
-                btnLocal.classList.remove('active');
-                btnIP.classList.remove('active');
-                console.log('⏹️ Semua kamera dimatikan');
-            }
-
-           
+                    localStream = await);
+                    
+                    localStream = await navigator.media navigator.mediaDevices.getUserDevices.getUserMedia({
+                        video: {
+                            widthMedia({
+                        video: {
+                            width: { ideal: 1280 },
+: { ideal: 1280 },
+                            height: { ideal: 720                            height: { ideal: 720 },
+                            facingMode: 'user },
+                            facingMode: 'user'
+'
+                        },
+                        audio                        },
+                        audio: false
+                   : false
+                    });
+                    
+                    local });
+                    
+                    localVideo.srcObject = localStream;
+                    localVideo.style.displayVideo.srcObject = localStream;
+                    localVideo.style.display = 'block';
+ = 'block';
+                    ipIf                    ipIframe.style.display = 'rame.style.display = 'none';
+                    
+                   none';
+                    
+                    // Tung // Tunggu videogu video benar-benar mulai benar-benar mulai
+                    await new
+                    await new
