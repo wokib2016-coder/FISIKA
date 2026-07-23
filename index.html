@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fisica · Guru Fisika</title>
+    <title>Fisica · Guru Fisika · Face Detection</title>
     <!-- Google Font & Font Awesome -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <!-- MediaPipe FaceMesh -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <style>
         * {
             margin: 0;
@@ -97,28 +101,24 @@
             box-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
         }
 
+        .video-wrapper #videoCanvas {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16 / 9;
+            background: #0a0f1a;
+            display: block;
+        }
+
         .video-wrapper #localVideo {
             display: none;
             width: 100%;
             height: auto;
-            max-height: 70vh;
             aspect-ratio: 16 / 9;
             background: #0a0f1a;
             border: none;
             outline: none;
             object-fit: cover;
             transform: scaleX(-1);
-        }
-
-        .video-wrapper #ipCameraIframe {
-            display: none;
-            width: 100%;
-            height: 100%;
-            min-height: 350px;
-            aspect-ratio: 16 / 9;
-            background: #0a0f1a;
-            border: none;
-            outline: none;
         }
 
         .video-wrapper .loading-overlay {
@@ -217,6 +217,44 @@
         .video-wrapper .no-camera-overlay .btn-retry-cam:hover {
             background: rgba(70, 150, 255, 0.2);
             transform: scale(1.02);
+        }
+
+        .detection-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1rem;
+            justify-content: center;
+            padding: 0.4rem 0;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .detection-info .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .detection-info .info-item i {
+            font-size: 0.6rem;
+            color: #7fb0ff;
+        }
+
+        .detection-info .info-item .dot-active {
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: blink 1.4s infinite;
+        }
+
+        .detection-info .info-item .dot-inactive {
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #ff6b6b;
         }
 
         .camera-controls {
@@ -590,7 +628,8 @@
         .video-wrapper,
         .stream-label,
         .camera-controls,
-        .cam-status {
+        .cam-status,
+        .detection-info {
             animation: fadeNaik 0.8s ease forwards;
         }
 
@@ -604,6 +643,9 @@
             animation-delay: 0.08s;
         }
         .camera-controls {
+            animation-delay: 0.1s;
+        }
+        .detection-info {
             animation-delay: 0.1s;
         }
         .deskripsi {
@@ -656,9 +698,6 @@
                 border-radius: 1.2rem;
                 min-height: 220px;
             }
-            .video-wrapper #ipCameraIframe {
-                min-height: 220px;
-            }
             .camera-controls .btn-cam {
                 font-size: 0.6rem;
                 padding: 0.35rem 0.8rem;
@@ -687,8 +726,8 @@
             <!-- Loading overlay -->
             <div class="loading-overlay" id="loadingOverlay">
                 <div class="spinner"></div>
-                <span class="loading-text" id="loadingText">Menghubungkan ke kamera...</span>
-                <span class="loading-sub" id="loadingSub">Pastikan kamera terhubung</span>
+                <span class="loading-text" id="loadingText">Memuat FaceMesh...</span>
+                <span class="loading-sub" id="loadingSub">MediaPipe Face Detection</span>
             </div>
 
             <!-- No camera overlay -->
@@ -701,16 +740,27 @@
                 </button>
             </div>
 
-            <!-- Video untuk WebRTC (kamera lokal / laptop) -->
+            <!-- Video untuk WebRTC (kamera lokal) -->
             <video id="localVideo" autoplay muted playsinline></video>
 
-            <!-- Iframe untuk IP Camera -->
-            <iframe id="ipCameraIframe" 
-                    src="" 
-                    frameborder="0" 
-                    allowfullscreen
-                    allow="autoplay; encrypted-media">
-            </iframe>
+            <!-- Canvas untuk FaceMesh overlay -->
+            <canvas id="videoCanvas"></canvas>
+        </div>
+
+        <!-- Detection Info -->
+        <div class="detection-info">
+            <span class="info-item">
+                <i class="fas fa-user"></i>
+                <span id="faceCount">Wajah: 0</span>
+            </span>
+            <span class="info-item">
+                <i class="fas fa-circle" id="statusDotInfo" style="color:#ff6b6b;"></i>
+                <span id="statusTextInfo">Deteksi: Off</span>
+            </span>
+            <span class="info-item">
+                <i class="fas fa-robot"></i>
+                <span>FaceMesh 468 titik</span>
+            </span>
         </div>
 
         <!-- Status kamera -->
@@ -737,7 +787,7 @@
         <!-- Label stream -->
         <div class="stream-label">
             <i class="fas fa-circle"></i> 
-            LIVE STREAM · Fisika Lab
+            LIVE STREAM · Face Detection
             <span class="status-text" id="streamModeText">(kamera laptop)</span>
         </div>
 
@@ -832,19 +882,21 @@
         (function() {
             'use strict';
 
-            const STREAM_URL = 'http://10.101.209.113/';
-            
             // Elements
-            const localVideo = document.getElementById('localVideo');
-            const ipIframe = document.getElementById('ipCameraIframe');
+            const video = document.getElementById('localVideo');
+            const canvas = document.getElementById('videoCanvas');
+            const ctx = canvas.getContext('2d');
             const loadingOverlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');
             const loadingSub = document.getElementById('loadingSub');
+            const noCameraOverlay = document.getElementById('noCameraOverlay');
             const statusDot = document.getElementById('statusDot');
             const statusText = document.getElementById('statusText');
             const streamModeText = document.getElementById('streamModeText');
-            const noCameraOverlay = document.getElementById('noCameraOverlay');
-            
+            const faceCountEl = document.getElementById('faceCount');
+            const statusDotInfo = document.getElementById('statusDotInfo');
+            const statusTextInfo = document.getElementById('statusTextInfo');
+
             const btnLocal = document.getElementById('btnLocalCam');
             const btnIP = document.getElementById('btnIPCam');
             const btnStop = document.getElementById('btnStopCam');
@@ -854,239 +906,28 @@
             let currentMode = 'local';
             let isCameraOn = false;
             let isStarting = false;
+            let faceMesh = null;
+            let isFaceMeshReady = false;
+            let detectionActive = false;
 
-            function updateStatus(on, mode, text, isLoading) {
-                if (isLoading) {
-                    statusDot.className = 'dot-status loading';
-                    statusText.textContent = text || 'Memuat...';
-                } else if (on) {
-                    statusDot.className = 'dot-status on';
-                    statusText.textContent = text || 'Kamera aktif';
-                } else {
-                    statusDot.className = 'dot-status off';
-                    statusText.textContent = text || 'Kamera tidak aktif';
-                }
-                isCameraOn = on;
-                isStarting = false;
-                
-                if (mode === 'local') {
-                    streamModeText.textContent = '(kamera laptop)';
-                } else if (mode === 'ip') {
-                    streamModeText.textContent = '(IP camera)';
-                } else {
-                    streamModeText.textContent = '(off)';
-                }
+            // ==================== FACE MESH ====================
+            function initFaceMesh() {
+                loadingText.textContent = 'Memuat FaceMesh...';
+                loadingSub.textContent = 'MediaPipe Face Detection';
 
-                // Sembunyikan no camera overlay jika kamera aktif
-                if (on) {
-                    noCameraOverlay.style.display = 'none';
-                }
-            }
-
-            function hideLoading() {
-                loadingOverlay.classList.add('hidden');
-            }
-
-            function showLoading(text, sub) {
-                loadingOverlay.classList.remove('hidden');
-                if (text) loadingText.textContent = text;
-                if (sub) loadingSub.textContent = sub;
-                noCameraOverlay.style.display = 'none';
-                updateStatus(false, currentMode, 'Menghubungkan...', true);
-            }
-
-            function showNoCamera() {
-                hideLoading();
-                noCameraOverlay.style.display = 'flex';
-                updateStatus(false, currentMode, 'Kamera tidak terdeteksi');
-            }
-
-            // ==================== KAMERA LAPTOP (WebRTC) ====================
-            async function startLocalCamera() {
-                if (isStarting) return;
-                isStarting = true;
-                
-                showLoading('Mengaktifkan kamera laptop...', 'Mohon izinkan akses kamera');
-                
-                try {
-                    // Matikan IP camera dulu
-                    stopIPCamera();
-                    
-                    // Cek apakah ada kamera
-                    const devices = await navigator.mediaDevices.enumerateDevices();
-                    const videoDevices = devices.filter(d => d.kind === 'videoinput');
-                    
-                    if (videoDevices.length === 0) {
-                        console.warn('Tidak ada kamera terdeteksi');
-                        showNoCamera();
-                        isStarting = false;
-                        return;
+                faceMesh = new FaceMesh({
+                    locateFile: (file) => {
+                        return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
                     }
-                    
-                    console.log('Kamera terdeteksi:', videoDevices.length);
-                    
-                    localStream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 },
-                            facingMode: 'user'
-                        },
-                        audio: false
-                    });
-                    
-                    localVideo.srcObject = localStream;
-                    localVideo.style.display = 'block';
-                    ipIframe.style.display = 'none';
-                    
-                    // Tunggu video benar-benar mulai
-                    await new Promise((resolve) => {
-                        if (localVideo.readyState >= 2) {
-                            resolve();
-                        } else {
-                            localVideo.onloadeddata = () => resolve();
-                        }
-                    });
-                    
-                    hideLoading();
-                    updateStatus(true, 'local', 'Kamera laptop aktif ✓');
-                    currentMode = 'local';
-                    noCameraOverlay.style.display = 'none';
-                    
-                    btnLocal.classList.add('active');
-                    btnIP.classList.remove('active');
-                    
-                    console.log('✅ Kamera laptop berhasil diaktifkan');
-                    
-                } catch (err) {
-                    console.error('❌ Gagal mengakses kamera:', err);
-                    hideLoading();
-                    
-                    let errorMsg = 'Gagal akses kamera';
-                    if (err.message.includes('Permission denied') || err.message.includes('NotAllowedError')) {
-                        errorMsg = 'Izin kamera ditolak. Izinkan akses kamera di browser.';
-                        showNoCamera();
-                    } else if (err.message.includes('No device') || err.message.includes('NotFoundError')) {
-                        errorMsg = 'Tidak ada kamera terdeteksi. Pastikan kamera laptop terhubung.';
-                        showNoCamera();
-                    } else {
-                        errorMsg = err.message;
-                        updateStatus(false, 'local', errorMsg);
-                    }
-                    
-                    alert('❌ ' + errorMsg + '\n\nPastikan:\n1. Anda mengizinkan akses kamera\n2. Kamera laptop terhubung dengan benar\n3. Coba refresh halaman');
-                    isStarting = false;
-                }
-            }
+                });
 
-            // ==================== IP CAMERA ====================
-            function startIPCamera() {
-                if (isStarting) return;
-                isStarting = true;
-                
-                showLoading('Menghubungkan ke IP Camera...', 'http://10.101.209.113/');
-                
-                stopLocalCamera();
-                
-                localVideo.style.display = 'none';
-                localVideo.srcObject = null;
-                
-                ipIframe.style.display = 'block';
-                ipIframe.src = STREAM_URL + '?_t=' + Date.now();
-                
-                setTimeout(() => {
-                    hideLoading();
-                    updateStatus(true, 'ip', 'IP Camera terhubung');
-                    currentMode = 'ip';
-                    noCameraOverlay.style.display = 'none';
-                    
-                    btnIP.classList.add('active');
-                    btnLocal.classList.remove('active');
-                    isStarting = false;
-                    
-                    console.log('✅ IP Camera diaktifkan:', STREAM_URL);
-                }, 3000);
-            }
+                faceMesh.setOptions({
+                    maxNumFaces: 4,
+                    refineLandmarks: true,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
+                });
 
-            // ==================== STOP CAMERA ====================
-            function stopLocalCamera() {
-                if (localStream) {
-                    localStream.getTracks().forEach(track => track.stop());
-                    localStream = null;
-                }
-                localVideo.srcObject = null;
-                localVideo.style.display = 'none';
-            }
+                faceMesh.onResults(onFaceMeshResults);
 
-            function stopIPCamera() {
-                ipIframe.src = 'about:blank';
-                ipIframe.style.display = 'none';
-            }
-
-            function stopAllCameras() {
-                isStarting = false;
-                stopLocalCamera();
-                stopIPCamera();
-                hideLoading();
-                updateStatus(false, 'off', 'Kamera dimatikan');
-                currentMode = 'off';
-                noCameraOverlay.style.display = 'none';
-                btnLocal.classList.remove('active');
-                btnIP.classList.remove('active');
-                console.log('⏹️ Semua kamera dimatikan');
-            }
-
-            // ==================== EVENT LISTENERS ====================
-            btnLocal.addEventListener('click', function() {
-                if (currentMode === 'local' && isCameraOn) {
-                    return;
-                }
-                startLocalCamera();
-            });
-
-            btnIP.addEventListener('click', function() {
-                if (currentMode === 'ip' && isCameraOn) {
-                    return;
-                }
-                startIPCamera();
-            });
-
-            btnStop.addEventListener('click', function() {
-                stopAllCameras();
-            });
-
-            btnRetry.addEventListener('click', function() {
-                noCameraOverlay.style.display = 'none';
-                startLocalCamera();
-            });
-
-            // ==================== AUTO START ====================
-            // Cek apakah ada kamera, jika ya mulai otomatis
-            async function autoStart() {
-                try {
-                    const devices = await navigator.mediaDevices.enumerateDevices();
-                    const videoDevices = devices.filter(d => d.kind === 'videoinput');
-                    if (videoDevices.length > 0) {
-                        console.log('✅ Kamera terdeteksi, memulai otomatis...');
-                        setTimeout(() => startLocalCamera(), 500);
-                    } else {
-                        console.warn('⚠️ Tidak ada kamera terdeteksi');
-                        showNoCamera();
-                    }
-                } catch (e) {
-                    console.warn('Gagal enumerasi device:', e);
-                    showNoCamera();
-                }
-            }
-
-            autoStart();
-
-            // ==================== LOG ====================
-            console.log('📹 Fisica - Guru Fisika');
-            console.log('📷 Mode: Kamera Laptop (WebRTC) atau IP Camera');
-            console.log('🔗 IP Camera URL:', STREAM_URL);
-            console.log('💡 Klik tombol untuk beralih mode');
-
-        })();
-    </script>
-</body>
-</html>
+                //
