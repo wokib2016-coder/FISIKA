@@ -8,6 +8,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <!-- MediaPipe Face Detection (lebih ringan dari FaceMesh) -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -90,26 +94,6 @@
         .video-wrapper .loading-overlay .loading-sub {
             color: rgba(255,255,255,0.25);
             font-size: 0.65rem;
-        }
-        .video-wrapper .loading-overlay .progress-bar {
-            width: 80%;
-            max-width: 300px;
-            height: 4px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .video-wrapper .loading-overlay .progress-bar .progress-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #7fb0ff, #4caf50);
-            border-radius: 10px;
-            transition: width 0.3s ease;
-        }
-        .video-wrapper .loading-overlay .progress-text {
-            color: rgba(255,255,255,0.2);
-            font-size: 0.6rem;
-            font-family: 'Courier New', monospace;
         }
         .video-wrapper .no-camera-overlay {
             position: absolute;
@@ -359,10 +343,8 @@
         <div class="video-wrapper" id="videoWrapper">
             <div class="loading-overlay" id="loadingOverlay">
                 <div class="spinner"></div>
-                <span class="loading-text" id="loadingText">Memulai FaceMesh...</span>
-                <span class="loading-sub" id="loadingSub">MediaPipe Face Detection</span>
-                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-                <span class="progress-text" id="progressText">0%</span>
+                <span class="loading-text" id="loadingText">Memulai Face Detection...</span>
+                <span class="loading-sub" id="loadingSub">MediaPipe · Model ringan (~2MB)</span>
             </div>
             <div class="no-camera-overlay" id="noCameraOverlay">
                 <i class="fas fa-camera-slash"></i>
@@ -377,7 +359,8 @@
         <div class="detection-info">
             <span class="info-item"><i class="fas fa-user"></i> <span id="faceCount">Wajah: 0</span></span>
             <span class="info-item"><i class="fas fa-circle" id="statusDotInfo" style="color:#ff6b6b;"></i> <span id="statusTextInfo">Deteksi: Off</span></span>
-            <span class="info-item"><i class="fas fa-robot"></i> FaceMesh 468 titik</span>
+            <span class="info-item"><i class="fas fa-robot"></i> Face Detection</span>
+            <span class="info-item"><i class="fas fa-clock" id="fpsDisplay"></i> <span id="fpsText">0 FPS</span></span>
         </div>
 
         <div class="cam-status"><span class="dot-status off" id="statusDot"></span><span id="statusText">Kamera belum aktif</span></div>
@@ -416,7 +399,6 @@
         <div style="position:absolute;bottom:14px;left:30px;opacity:0.04;font-size:0.7rem;color:#aac8ff;font-weight:300;letter-spacing:3px;pointer-events:none;">e = mc²</div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
     <script>
     (function() {
         'use strict';
@@ -427,8 +409,6 @@
         const loadingOverlay = document.getElementById('loadingOverlay');
         const loadingText = document.getElementById('loadingText');
         const loadingSub = document.getElementById('loadingSub');
-        const progressFill = document.getElementById('progressFill');
-        const progressText = document.getElementById('progressText');
         const noCameraOverlay = document.getElementById('noCameraOverlay');
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
@@ -436,6 +416,8 @@
         const faceCountEl = document.getElementById('faceCount');
         const statusDotInfo = document.getElementById('statusDotInfo');
         const statusTextInfo = document.getElementById('statusTextInfo');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+        const fpsText = document.getElementById('fpsText');
 
         const btnLocal = document.getElementById('btnLocalCam');
         const btnStop = document.getElementById('btnStopCam');
@@ -444,17 +426,11 @@
         let localStream = null;
         let isCameraOn = false;
         let isStarting = false;
-        let faceMesh = null;
-        let isFaceMeshReady = false;
+        let faceDetection = null;
+        let isModelReady = false;
         let detectionRunning = false;
-
-        function updateProgress(percent, text, sub) {
-            const p = Math.min(100, Math.max(0, percent));
-            progressFill.style.width = p + '%';
-            progressText.textContent = Math.round(p) + '%';
-            if (text) loadingText.textContent = text;
-            if (sub) loadingSub.textContent = sub;
-        }
+        let frameCount = 0;
+        let lastFpsUpdate = Date.now();
 
         function updateStatus(on, text, isLoading) {
             if (isLoading) {
@@ -470,52 +446,43 @@
             isCameraOn = on;
         }
 
-        // ==================== FACE MESH ====================
-        function initFaceMesh() {
-            updateProgress(5, 'Memuat FaceMesh...', 'Mengunduh model AI (≈10MB)');
-            
-            let progress = 5;
-            const interval = setInterval(() => {
-                progress += Math.random() * 6 + 2;
-                if (progress > 90) {
-                    progress = 90;
-                    clearInterval(interval);
-                }
-                updateProgress(progress, 'Memuat FaceMesh...', 'Mengunduh model AI (≈10MB)');
-            }, 600);
+        // ==================== FACE DETECTION (lebih ringan) ====================
+        function initFaceDetection() {
+            loadingText.textContent = 'Memuat Face Detection...';
+            loadingSub.textContent = 'MediaPipe · Model ringan (~2MB)';
+            loadingOverlay.classList.remove('hidden');
 
-            faceMesh = new FaceMesh({
-                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+            faceDetection = new FaceDetection({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
             });
 
-            faceMesh.setOptions({
-                maxNumFaces: 4,
-                refineLandmarks: true,
-                minDetectionConfidence: 0.5,
-                minTrackingConfidence: 0.5
+            faceDetection.setOptions({
+                model: 'short', // 'short' lebih ringan dari 'full'
+                minDetectionConfidence: 0.5
             });
 
-            faceMesh.onResults((results) => {
-                clearInterval(interval);
-                if (!isFaceMeshReady) {
-                    isFaceMeshReady = true;
-                    updateProgress(100, 'FaceMesh Siap!', 'Model berhasil dimuat');
-                    setTimeout(() => {
-                        loadingOverlay.classList.add('hidden');
-                        if (detectionRunning) {
-                            sendToFaceMesh();
-                        }
-                    }, 500);
+            faceDetection.onResults((results) => {
+                if (!isModelReady) {
+                    isModelReady = true;
+                    loadingOverlay.classList.add('hidden');
+                    console.log('✅ Face Detection siap!');
+                    if (isCameraOn) {
+                        detectionRunning = true;
+                        sendToFaceDetection();
+                    }
                 }
                 drawResults(results);
             });
 
-            faceMesh.initialize().then(() => {
-                console.log('✅ FaceMesh initialized');
+            faceDetection.initialize().then(() => {
+                console.log('✅ Face Detection initialized');
             }).catch((err) => {
-                console.error('❌ FaceMesh error:', err);
-                updateProgress(0, 'Gagal memuat FaceMesh', 'Error: ' + err.message);
-                loadingOverlay.classList.add('hidden');
+                console.error('❌ Face Detection error:', err);
+                loadingText.textContent = 'Gagal memuat model';
+                loadingSub.textContent = 'Error: ' + err.message;
+                setTimeout(() => {
+                    loadingOverlay.classList.add('hidden');
+                }, 3000);
             });
         }
 
@@ -529,42 +496,33 @@
                 ctx.drawImage(video, 0, 0, w, h);
             }
             
-            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-                const count = results.multiFaceLandmarks.length;
+            if (results.detections && results.detections.length > 0) {
+                const count = results.detections.length;
                 faceCountEl.textContent = `Wajah: ${count}`;
                 statusDotInfo.style.color = '#4caf50';
                 statusTextInfo.textContent = 'Deteksi: Aktif';
                 
-                for (const landmarks of results.multiFaceLandmarks) {
-                    // Draw points
-                    ctx.fillStyle = 'rgba(0, 255, 100, 0.6)';
-                    for (const lm of landmarks) {
-                        const x = lm.x * w;
-                        const y = lm.y * h;
-                        ctx.beginPath();
-                        ctx.arc(x, y, 1.5, 0, 2 * Math.PI);
-                        ctx.fill();
-                    }
+                for (const detection of results.detections) {
+                    const bbox = detection.boundingBox;
+                    const x = bbox.xCenter * w - (bbox.width * w) / 2;
+                    const y = bbox.yCenter * h - (bbox.height * h) / 2;
+                    const width = bbox.width * w;
+                    const height = bbox.height * h;
                     
-                    // Draw connections (simplified)
-                    ctx.strokeStyle = 'rgba(0, 200, 255, 0.1)';
-                    ctx.lineWidth = 0.5;
-                    const connections = [
-                        [10,338],[338,297],[297,332],[332,284],[284,251],[251,389],
-                        [389,356],[356,454],[454,323],[323,361],[361,288],[288,397],
-                        [397,365],[365,379],[379,378],[378,400],[400,377],[377,152],
-                        [152,148],[148,176],[176,149],[149,150],[150,136],[136,172],
-                        [172,58],[58,132],[132,93],[93,234],[234,127],[127,162],
-                        [162,21],[21,54],[54,103],[103,67],[67,109],[109,10]
-                    ];
-                    for (const [i, j] of connections) {
-                        const p1 = landmarks[i];
-                        const p2 = landmarks[j];
-                        if (p1 && p2) {
+                    // Gambar kotak wajah
+                    ctx.strokeStyle = 'rgba(0, 255, 100, 0.6)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x, y, width, height);
+                    
+                    // Gambar titik landmark (jika ada)
+                    if (detection.landmarks) {
+                        ctx.fillStyle = 'rgba(0, 200, 255, 0.5)';
+                        for (const lm of detection.landmarks) {
+                            const lx = lm.x * w;
+                            const ly = lm.y * h;
                             ctx.beginPath();
-                            ctx.moveTo(p1.x * w, p1.y * h);
-                            ctx.lineTo(p2.x * w, p2.y * h);
-                            ctx.stroke();
+                            ctx.arc(lx, ly, 3, 0, 2 * Math.PI);
+                            ctx.fill();
                         }
                     }
                 }
@@ -573,23 +531,33 @@
                 statusDotInfo.style.color = '#ff6b6b';
                 statusTextInfo.textContent = 'Deteksi: Off';
             }
+            
+            // Update FPS
+            frameCount++;
+            const now = Date.now();
+            if (now - lastFpsUpdate > 1000) {
+                const fps = Math.round(frameCount * 1000 / (now - lastFpsUpdate));
+                frameCount = 0;
+                lastFpsUpdate = now;
+                fpsText.textContent = fps + ' FPS';
+            }
         }
 
-        // ==================== SEND TO FACE MESH ====================
-        function sendToFaceMesh() {
-            if (!isFaceMeshReady || !faceMesh || !isCameraOn) {
+        // ==================== SEND TO FACE DETECTION ====================
+        function sendToFaceDetection() {
+            if (!isModelReady || !faceDetection || !isCameraOn) {
                 detectionRunning = false;
                 return;
             }
             detectionRunning = true;
-            faceMesh.send({ image: video }).then(() => {
+            faceDetection.send({ image: video }).then(() => {
                 if (detectionRunning && isCameraOn) {
-                    requestAnimationFrame(sendToFaceMesh);
+                    requestAnimationFrame(sendToFaceDetection);
                 }
             }).catch((err) => {
-                console.warn('FaceMesh send error:', err);
+                console.warn('Detection error:', err);
                 if (detectionRunning && isCameraOn) {
-                    setTimeout(sendToFaceMesh, 100);
+                    setTimeout(sendToFaceDetection, 100);
                 }
             });
         }
@@ -600,7 +568,8 @@
             isStarting = true;
             
             loadingOverlay.classList.remove('hidden');
-            updateProgress(0, 'Mengaktifkan kamera...', 'Mohon izinkan akses kamera');
+            loadingText.textContent = 'Mengaktifkan kamera...';
+            loadingSub.textContent = 'Mohon izinkan akses kamera';
             noCameraOverlay.style.display = 'none';
             
             try {
@@ -627,20 +596,16 @@
                     else video.onloadeddata = () => resolve();
                 });
                 
-                // Set canvas size
                 canvas.width = video.videoWidth || 640;
                 canvas.height = video.videoHeight || 480;
                 
-                if (!faceMesh) {
-                    initFaceMesh();
-                } else if (isFaceMeshReady) {
+                if (!faceDetection) {
+                    initFaceDetection();
+                } else if (isModelReady) {
                     loadingOverlay.classList.add('hidden');
                     updateStatus(true, 'Kamera aktif');
                     detectionRunning = true;
-                    sendToFaceMesh();
-                } else {
-                    // FaceMesh masih loading
-                    updateStatus(false, 'Menunggu FaceMesh...', true);
+                    sendToFaceDetection();
                 }
                 
                 updateStatus(true, 'Kamera laptop aktif');
@@ -717,8 +682,8 @@
         }
 
         autoStart();
-        console.log('📹 Face Detection dengan MediaPipe FaceMesh');
-        console.log('💡 Loading model ~10MB, mohon tunggu...');
+        console.log('📹 Face Detection dengan MediaPipe (model short ~2MB)');
+        console.log('⚡ Loading lebih cepat dari FaceMesh');
 
     })();
     </script>
